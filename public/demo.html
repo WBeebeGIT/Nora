@@ -113,6 +113,95 @@
     }
   </style>
 </head>
+  <script>
+(function () {
+  // Helpers
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const money = (n) => `$${n.toLocaleString()}`;
+
+  // Elements
+  const dateInput     = document.querySelector('input[type="date"]') || document.getElementById('event-date');
+  const locationInput = document.getElementById('event-location');
+  const hoursBtns     = $$('.hours .pill');
+  const addonBtns     = $$('.addons .pill');
+  const postBtns      = $$('.post .pill');
+  const quoteBtn      = document.getElementById('get-quote');
+  const totalRow      = document.getElementById('total-row');
+
+  function getSelectedText(list) {
+    return list.filter(b => b.classList.contains('active')).map(b => b.dataset.value);
+  }
+
+  function currentPayload() {
+    const hours = Number((hoursBtns.find(b => b.classList.contains('active')) || {}).dataset?.value || 4);
+    return {
+      eventDate: dateInput?.value || '',
+      location:  locationInput?.value?.trim() || '',
+      hours,
+      addons: getSelectedText(addonBtns),            // ['Drone','Livestream','Rush48','Rush24','USB']
+      post:   getSelectedText(postBtns),             // ['Social','StudioEdit','ClientDirected']
+    };
+  }
+
+  // Toggle buttons
+  function wirePills(pills, single=false) {
+    pills.forEach(p => {
+      p.addEventListener('click', () => {
+        if (single) pills.forEach(x => x.classList.remove('active'));
+        p.classList.toggle('active');
+      });
+    });
+  }
+  wirePills(hoursBtns, true);
+  wirePills(addonBtns, false);
+  wirePills(postBtns, false);
+
+  // Initial defaults
+  (hoursBtns[0] || {}).classList?.add('active');
+
+  // Call backend
+  async function requestQuote() {
+    const payload = currentPayload();
+
+    // Show working state
+    quoteBtn.disabled = true;
+    const oldText = quoteBtn.textContent;
+    quoteBtn.textContent = 'Calculating…';
+
+    try {
+      const res = await fetch('/api/quote', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data?.error || 'Quote failed');
+
+      // Render total + breakdown
+      const lines = (data.lineItems || []).map(li => {
+        const qty = li.qty ? ` × ${li.qty}` : '';
+        return `<div class="li"><span>${li.label}${qty}</span><span>${money(li.amount)}</span></div>`;
+      }).join('');
+
+      totalRow.innerHTML = `
+        <div class="breakdown">
+          ${lines}
+          <div class="li total"><span>Total</span><span>${money(data.total || 0)}</span></div>
+        </div>
+      `;
+    } catch (e) {
+      totalRow.innerHTML = `<div class="error">Hmm — I couldn’t complete the quote. ${e.message}</div>`;
+    } finally {
+      quoteBtn.disabled = false;
+      quoteBtn.textContent = oldText;
+    }
+  }
+
+  quoteBtn?.addEventListener('click', requestQuote);
+})();
+</script>
 <body>
   <div class="wrap">
     <div class="brand"><img src="/logo.png" alt="Cinematic Videographers" onerror="this.style.display='none'"></div>
