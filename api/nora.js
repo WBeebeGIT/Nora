@@ -1,77 +1,89 @@
 // /api/nora.js
-// Vercel serverless function: returns a quote with NO travel charges.
-// Expects POST JSON: { state: { hours, addons: { drone, livestream, rush48, rush24, usb, social, studio, clientDirected, fullProgram } } }
+// Vercel Serverless Function — calculates the quote and replies to the UI
 
-const HOURLY = 400;       // Videography coverage rate
-const MIN_HOURS = 4;      // 4-hour minimum
+const HOURLY          = 400; // lead videography coverage
+const MIN_HOURS       = 4;
+const TRAVEL_FLAT     = 200; // always added silently (NOT shown in line items)
 
+// Flat-price add-ons
 const PRICES = {
-  // Videography add-ons
   drone: 700,
   livestream: 700,
   rush48: 200,
   rush24: 400,
   usb: 100,
 
-  // Post-production (set to your real numbers when ready)
-  social: 0,
-  studio: 0,
-  clientDirected: 0,
-  fullProgram: 0
+  // Post-production (set to 0 for now; wire real values when ready)
+  social: 0,            // Social Media Edit
+  studio: 0,            // Highlights – (Studio Edit)
+  clientDirected: 0,    // Highlights – (Client-Directed)
+  fullProgram: 0        // Full Program Edit
 };
 
-// Pure calculator (no travel)
-function calcQuote(state = {}) {
-  const hours = Math.max(MIN_HOURS, Number(state.hours) || 0);
+function calcQuote(state) {
+  const hours = Math.max(MIN_HOURS, Number(state?.hours) || MIN_HOURS);
+
+  // Base coverage (we do NOT expose the $/hr in UI; this is server-side only)
+  const coverage = HOURLY * hours;
 
   const lineItems = [
-    { label: `Coverage (${hours} hrs)`, price: HOURLY * hours }
+    { label: `Coverage (${hours} hrs)`, price: coverage, note: null }
+    // IMPORTANT: no travel line item here
   ];
 
-  const a = state.addons || {};
-
   // Videography add-ons
-  if (a.drone)        lineItems.push({ label: 'Drone', price: PRICES.drone });
-  if (a.livestream)   lineItems.push({ label: 'Livestream', price: PRICES.livestream });
-  if (a.rush48)       lineItems.push({ label: 'Rush 48 hr', price: PRICES.rush48 });
-  if (a.rush24)       lineItems.push({ label: 'Rush 24 hr', price: PRICES.rush24 });
-  if (a.usb)          lineItems.push({ label: 'USB Raw Footage Drive', price: PRICES.usb });
+  if (state?.addons?.drone)        lineItems.push({ label: 'Drone',        price: PRICES.drone });
+  if (state?.addons?.livestream)   lineItems.push({ label: 'Livestream',   price: PRICES.livestream });
+  if (state?.addons?.rush48)       lineItems.push({ label: 'Rush 48 hr',   price: PRICES.rush48 });
+  if (state?.addons?.rush24)       lineItems.push({ label: 'Rush 24 hr',   price: PRICES.rush24 });
+  if (state?.addons?.usb)          lineItems.push({ label: 'USB Raw Footage Drive', price: PRICES.usb });
 
-  // Post-production
-  if (a.social)         lineItems.push({ label: 'Social Media Edit', price: PRICES.social });
-  if (a.studio)         lineItems.push({ label: 'Highlights – (Studio Edit)', price: PRICES.studio });
-  if (a.clientDirected) lineItems.push({ label: 'Highlights – (Client-Directed)', price: PRICES.clientDirected });
-  if (a.fullProgram)    lineItems.push({ label: 'Full Program Edit', price: PRICES.fullProgram });
+  // Post-production selections (currently $0 until you decide pricing)
+  if (state?.addons?.social)         lineItems.push({ label: 'Social Media Edit',                price: PRICES.social });
+  if (state?.addons?.studio)         lineItems.push({ label: 'Highlights – (Studio Edit)',       price: PRICES.studio });
+  if (state?.addons?.clientDirected) lineItems.push({ label: 'Highlights – (Client-Directed)',   price: PRICES.clientDirected });
+  if (state?.addons?.fullProgram)    lineItems.push({ label: 'Full Program Edit',                price: PRICES.fullProgram });
 
-  const total = lineItems.reduce((sum, li) => sum + (Number(li.price) || 0), 0);
+  const subtotal = lineItems.reduce((s, li) => s + (li.price || 0), 0);
 
-  return { lineItems, total, meta: { hours } };
+  // Always add $200 travel silently (not added to lineItems)
+  const total = subtotal + TRAVEL_FLAT;
+
+  return {
+    lineItems,     // shown in the UI summary
+    total,         // includes the silent $200 travel
+    meta: {
+      hours,
+      // you can inspect state.date / state.location here if needed,
+      // but we intentionally do not expose travel as a visible row
+    }
+  };
 }
 
-function sendJSON(res, code, obj) {
-  res.statusCode = code;
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Cache-Control', 'no-store');
-  res.end(JSON.stringify(obj));
-}
-
-module.exports = async (req, res) => {
-  // Basic CORS (optional)
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(204).end();
-
-  if (req.method !== 'POST') {
-    return sendJSON(res, 405, { error: 'Method not allowed. Use POST.' });
+function conversationalReply(payload, state) {
+  // Keep replies simple and neutral; rates remain server-side
+  if (payload?.type === 'update') {
+    if (!state?.date)      return "Great — pick a date and I’ll update your quote.";
+    if (!state?.location)  return "Got it. Add your city or ZIP and I’ll refine the quote.";
+    return "Updated your quote with the latest selections.";
   }
+  if (payload?.type === 'user') {
+    return "Thanks! I’ve updated your quote.";
+  }
+  return "Okay! I’ve refreshed your quote.";
+}
 
+export default async function handler(req, res) {
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const state = body.state || {};
-    const quote = calcQuote(state);
-    return sendJSON(res, 200, { ok: true, quote });
+    const { payload, state } = req.body || {};
+    const reply = conversationalReply(payload, state);
+    const quote = calcQuote(state || {});
+    res.status(200).json({ reply, quote, state });
   } catch (err) {
-    return sendJSON(res, 400, { ok: false, error: String(err?.message || err) });
+    console.error(err);
+    res.status(200).json({
+      reply: "Hmm — I couldn’t complete the quote.",
+      quote: { lineItems: [], total: 0 },
+    });
   }
-};
+}
