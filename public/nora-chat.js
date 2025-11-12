@@ -5,22 +5,14 @@ const boxEl  = document.getElementById('box');
 const sendEl = document.getElementById('send');
 const ctrls  = document.getElementById('controls');
 
-// Conversation memory we keep client-side (server also keeps state)
 const convo = [];
 const state = {
-  date: null,           // dd/MM/yyyy
-  location: '',         // free text or ZIP
-  hours: 4,             // 4,6,8,10
-  addons: {             // toggles
-    drone: false,
-    livestream: false,
-    rush48: false,
-    rush24: false,
-    usb: false,
-    social: false,
-    studio: false,
-    clientDirected: false,
-    fullProgram: false,
+  date: null,           // keep null until user picks a date
+  location: '',
+  hours: 4,
+  addons: {
+    drone:false, livestream:false, rush48:false, rush24:false, usb:false,
+    social:false, studio:false, clientDirected:false, fullProgram:false,
   }
 };
 
@@ -39,8 +31,8 @@ function addTotalView(payload){
     <div class="bold" style="margin-bottom:6px;">Quote Summary</div>
     ${payload.lineItems.map(li => `
       <div class="li">
-        <span>${li.label}</span>
-        <span>${li.price > 0 ? '$'+li.price.toLocaleString() : (li.note || '')}</span>
+        <span>${li.label}${li.note ? ` <span class="muted">(${li.note})</span>` : ''}</span>
+        <span>${li.price > 0 ? '$'+li.price.toLocaleString() : ''}</span>
       </div>`).join('')}
     <div class="line"></div>
     <div class="li bold"><span>Total</span><span>$${payload.total.toLocaleString()}</span></div>
@@ -58,7 +50,6 @@ function chip(label, on, key){
     const active = b.getAttribute('data-active') === '1';
     b.setAttribute('data-active', active ? '0' : '1');
     state.addons[key] = !active;
-    // send silent update so server can re-check readiness
     postToNora({type:'update', state});
   };
   return b;
@@ -82,26 +73,51 @@ function hoursRow(){
   return row;
 }
 
+// simple debounce
+function debounce(fn, ms=300){
+  let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+}
+
+let dateInput, locInput;
+
 function controls(){
   ctrls.innerHTML = '';
-  // Date + Location
+
   const row1 = document.createElement('div'); row1.className = 'row';
-  const date = document.createElement('input'); date.type='date';
-  date.valueAsDate = state.date ? toISODate(state.date) : new Date();
-  date.onchange = ()=>{
-    state.date = fromISOToDisplay(date.value); // dd/MM/yyyy
+
+  // DATE: do NOT pre-fill; disable autocomplete; clear value on build
+  dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.autocomplete = 'off';
+  dateInput.value = '';                  // prevents restored value
+  dateInput.placeholder = 'dd/mm/yyyy';
+  dateInput.onchange = ()=>{
+    // convert yyyy-mm-dd -> dd/mm/yyyy
+    if (dateInput.value) {
+      const [y,m,d] = dateInput.value.split('-');
+      state.date = `${d.padStart(2,'0')}/${m.padStart(2,'0')}/${y}`;
+    } else {
+      state.date = null;
+    }
     postToNora({type:'update', state});
   };
-  const loc = document.createElement('input'); loc.type='text'; loc.placeholder='Where is your event located? (city or ZIP)';
-  loc.value = state.location || '';
-  loc.onchange = ()=>{ state.location = loc.value.trim(); postToNora({type:'update', state}); };
-  row1.append(date, loc);
 
-  // Hours
+  // LOCATION: disable autocomplete; live updates (debounced)
+  locInput = document.createElement('input');
+  locInput.type = 'text';
+  locInput.autocomplete = 'off';
+  locInput.placeholder = 'Where is your event located? (city or ZIP)';
+  locInput.value = '';
+  locInput.oninput = debounce(()=>{
+    state.location = (locInput.value || '').trim();
+    postToNora({type:'update', state});
+  }, 250);
+
+  row1.append(dateInput, locInput);
+
   const hLabel = document.createElement('div'); hLabel.className='muted'; hLabel.style.margin='6px 0 -2px'; hLabel.textContent='Video Coverage — hours (4-hour minimum)';
   const row2 = hoursRow();
 
-  // Add-ons
   const aLabel = document.createElement('div'); aLabel.className='muted'; aLabel.style.margin='10px 0 -2px'; aLabel.textContent='Videography add-ons';
   const aRow = document.createElement('div'); aRow.className='row';
   aRow.append(
@@ -112,7 +128,6 @@ function controls(){
     chip('USB Raw Footage Drive', state.addons.usb, 'usb'),
   );
 
-  // Post
   const pLabel = document.createElement('div'); pLabel.className='muted'; pLabel.style.margin='10px 0 -2px'; pLabel.textContent='Post-Production';
   const pRow = document.createElement('div'); pRow.className='row';
   pRow.append(
@@ -125,16 +140,14 @@ function controls(){
   ctrls.append(row1, hLabel, row2, aLabel, aRow, pLabel, pRow);
 }
 
-function toISODate(ddmmyyyy){
-  // dd/MM/yyyy -> yyyy-MM-dd
-  const [d,m,y]=ddmmyyyy.split('/').map(Number);
-  return new Date(Date.UTC(y, m-1, d));
-}
-function fromISOToDisplay(iso){
-  // yyyy-MM-dd -> dd/MM/yyyy
-  const [y,m,d]=iso.split('-').map(Number);
-  return `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
-}
+// BFCache/page-restore safety: clear any restored values
+window.addEventListener('pageshow', (e)=>{
+  if (e.persisted) {
+    state.date = null;
+    state.location = '';
+    controls();
+  }
+});
 
 async function postToNora(payload){
   const res = await fetch('/api/nora', {
@@ -143,22 +156,11 @@ async function postToNora(payload){
     body: JSON.stringify({ payload, state, convo })
   });
   const data = await res.json();
-
-  // Render any assistant text
-  if(data.reply){
-    addMsg(data.reply, 'her');
-  }
-  // Render total if present
-  if(data.quote){
-    addTotalView(data.quote);
-  }
-  // Update any canonical state
-  if(data.state){
-    Object.assign(state, data.state);
-  }
+  if(data.reply){ addMsg(data.reply, 'her'); }
+  if(data.quote){ addTotalView(data.quote); }
+  if(data.state){ Object.assign(state, data.state); }
 }
 
-// Send typed text (Nora can still understand free text)
 sendEl.onclick = async ()=>{
   const text = boxEl.value.trim();
   if(!text) return;
@@ -167,16 +169,9 @@ sendEl.onclick = async ()=>{
 };
 
 (function init(){
-  // set default date as today (dd/MM/yyyy)
-  const today = new Date();
-  const d = String(today.getDate()).padStart(2,'0');
-  const m = String(today.getMonth()+1).padStart(2,'0');
-  const y = today.getFullYear();
-  state.date = `${d}/${m}/${y}`;
+  // IMPORTANT: do NOT seed state.date here (prevents “Got it” on refresh)
   controls();
-
-  // initial greeting / first step
+  addMsg("Hi! I’m Nora. I’ll get you a quick quote in a few taps.");
   addMsg("Hi! I’m Nora. What’s your event date and location? You can also tap add-ons below and I’ll calculate instantly.");
-  // send initial snapshot so backend can show tips or auto-reply
-  postToNora({ type:'hello', state });
+  addMsg("Got it. What city or ZIP is the event in?");
 })();
