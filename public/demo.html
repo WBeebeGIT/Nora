@@ -3,395 +3,101 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ask Nora for a Quote</title>
+  <title>Nora — Instant Quote Chat</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg:#fff;
-      --ink:#111;
-      --muted:#6b7280;
-      --card:#fff;
-      --ring:#111;
-      --chip:#f3f4f6;
-      --chip-ink:#111;
-      --chip-on:#111;
-      --chip-on-ink:#fff;
-      --border:#e5e7eb;
-      --shadow: 0 20px 45px rgba(0,0,0,.08);
-      --radius:16px;
+      --ink:#0b0d0f; --ink-2:#2b2f33; --bg:#ffffff; --chip:#111; --chip-ink:#fff;
+      --muted:#6b7280; --ring:#0ea5e9; --card:#fff; --shadow:0 12px 45px rgba(16,24,40,.08);
+      --radius:18px;
     }
     *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--ink);
+      margin:0; background:var(--bg); color:var(--ink); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
     }
+    header{
+      padding:28px 20px 8px; text-align:center;
+    }
+    .logo{ display:block; margin:0 auto 12px; width:240px; max-width:70vw; }
+    h1{ margin:0 0 8px; font-size:38px; font-weight:800; letter-spacing:-0.01em;}
+    .sub{ color:var(--muted); font-size:15px;}
     .wrap{
-      max-width:940px;
-      margin:32px auto 56px;
-      padding:0 20px;
+      max-width:980px; margin:28px auto 40px; padding:0 16px;
     }
-    .brand{
-      display:flex;
-      justify-content:center;
-      margin-bottom:12px;
+    .chat{
+      background:var(--card); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:20px;
+      width:min(980px, 92vw); margin:0 auto;
     }
-    .brand img{
-      height:54px;
-      width:auto;
-      object-fit:contain;
-      filter:none;
+    .bar{
+      display:flex; align-items:center; gap:12px; margin-bottom:14px;
+      border:1px solid #eef2f7; background:#f9fafb; color:#111; padding:10px 12px; border-radius:12px;
+      font-size:14px;
     }
-    h1{
-      text-align:center;
-      font-size:40px;
-      line-height:1.15;
-      margin:6px 0 8px;
-      letter-spacing:-.01em;
+    .window{
+      border-radius:16px; border:1px solid #eef2f7; background:#fff; min-height:520px;
+      padding:16px; display:flex; flex-direction:column; gap:10px;
     }
-    .sub{
-      text-align:center;
-      color:var(--muted);
-      margin-bottom:22px;
-      font-size:15px;
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:24px;
-    }
-    .row{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:18px;
-      margin-bottom:16px;
-    }
-    @media(min-width:860px){
-      .row.twocol{grid-template-columns:1fr 1fr;}
-    }
-    .label{
-      font-weight:600;
-      margin-bottom:8px;
-    }
-    .field{
-      display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-      background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;
-    }
-    .input, input[type="text"], input[type="date"]{
-      width:100%;border:0;outline:0;background:transparent;color:var(--ink);
-      font-size:15px;
-    }
-    .chips{display:flex;gap:10px;flex-wrap:wrap}
+    .msgs{ flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:2px;}
+    .msg{ max-width:80%; padding:10px 12px; border-radius:14px; line-height:1.35; font-size:15px; box-shadow:0 1px 0 rgba(0,0,0,.03);}
+    .me{ align-self:flex-end; background:#111; color:#fff; border-top-right-radius:6px;}
+    .her{ align-self:flex-start; background:#f1f5f9; color:#0b0d0f; border-top-left-radius:6px;}
+    .row{ display:flex; gap:8px; flex-wrap:wrap; }
     .chip{
-      border:1px solid var(--border);
-      background:var(--chip); color:var(--chip-ink);
-      padding:8px 12px; border-radius:999px; cursor:pointer; user-select:none;
-      font-weight:600; font-size:14px;
+      appearance:none; border:1px solid #d1d5db; padding:8px 12px; border-radius:999px; cursor:pointer;
+      background:#fff; color:#111; font-size:14px;
     }
-    .chip.active{ background:var(--chip-on); color:var(--chip-on-ink); border-color:var(--chip-on);}
-    .actions{display:flex;align-items:center;gap:12px;margin-top:8px}
-    .btn{
-      appearance:none; border:0; border-radius:12px; padding:12px 16px; font-weight:700;
-      background:#111; color:#fff; cursor:pointer;
+    .chip[data-active="1"]{ background:#111; color:#fff; border-color:#111;}
+    .input{
+      display:flex; gap:8px; align-items:center; border-top:1px solid #eef2f7; padding-top:10px;
     }
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .note{color:var(--muted); font-size:13px}
+    input[type="text"], input[type="date"]{
+      flex:1; padding:12px 12px; border-radius:12px; border:1px solid #e5e7eb; font-size:14px;
+    }
+    button.send{
+      padding:11px 14px; border-radius:12px; border:0; background:#111; color:#fff; cursor:pointer;
+    }
+    .line{ height:1px; background:#f0f2f5; margin:4px 0 8px; }
     .total{
-      border-top:1px solid var(--border); margin-top:18px; padding-top:16px;
-      font-size:18px; font-weight:700;
+      margin-top:8px; border-radius:12px; background:#fafafa; border:1px solid #eee; padding:12px;
+      font-size:14px;
     }
-    .breakdown{margin-top:8px; color:#222}
-    .item{display:flex;justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px dashed var(--border)}
-    .item:last-child{border-bottom:0}
-    .muted{color:var(--muted)}
-    footer{
-      text-align:center;color:var(--muted);font-size:12px;margin-top:18px
+    .li{ display:flex; justify-content:space-between; padding:4px 0;}
+    .bold{ font-weight:700;}
+    .muted{ color:#6b7280;}
+    @media (max-width:640px){
+      h1{font-size:30px}
+      .window{min-height:460px}
     }
   </style>
 </head>
-  <script>
-(function () {
-  // Helpers
-  const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-  const money = (n) => `$${n.toLocaleString()}`;
-
-  // Elements
-  const dateInput     = document.querySelector('input[type="date"]') || document.getElementById('event-date');
-  const locationInput = document.getElementById('event-location');
-  const hoursBtns     = $$('.hours .pill');
-  const addonBtns     = $$('.addons .pill');
-  const postBtns      = $$('.post .pill');
-  const quoteBtn      = document.getElementById('get-quote');
-  const totalRow      = document.getElementById('total-row');
-
-  function getSelectedText(list) {
-    return list.filter(b => b.classList.contains('active')).map(b => b.dataset.value);
-  }
-
-  function currentPayload() {
-    const hours = Number((hoursBtns.find(b => b.classList.contains('active')) || {}).dataset?.value || 4);
-    return {
-      eventDate: dateInput?.value || '',
-      location:  locationInput?.value?.trim() || '',
-      hours,
-      addons: getSelectedText(addonBtns),            // ['Drone','Livestream','Rush48','Rush24','USB']
-      post:   getSelectedText(postBtns),             // ['Social','StudioEdit','ClientDirected']
-    };
-  }
-
-  // Toggle buttons
-  function wirePills(pills, single=false) {
-    pills.forEach(p => {
-      p.addEventListener('click', () => {
-        if (single) pills.forEach(x => x.classList.remove('active'));
-        p.classList.toggle('active');
-      });
-    });
-  }
-  wirePills(hoursBtns, true);
-  wirePills(addonBtns, false);
-  wirePills(postBtns, false);
-
-  // Initial defaults
-  (hoursBtns[0] || {}).classList?.add('active');
-
-  // Call backend
-  async function requestQuote() {
-    const payload = currentPayload();
-
-    // Show working state
-    quoteBtn.disabled = true;
-    const oldText = quoteBtn.textContent;
-    quoteBtn.textContent = 'Calculating…';
-
-    try {
-      const res = await fetch('/api/quote', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data?.error || 'Quote failed');
-
-      // Render total + breakdown
-      const lines = (data.lineItems || []).map(li => {
-        const qty = li.qty ? ` × ${li.qty}` : '';
-        return `<div class="li"><span>${li.label}${qty}</span><span>${money(li.amount)}</span></div>`;
-      }).join('');
-
-      totalRow.innerHTML = `
-        <div class="breakdown">
-          ${lines}
-          <div class="li total"><span>Total</span><span>${money(data.total || 0)}</span></div>
-        </div>
-      `;
-    } catch (e) {
-      totalRow.innerHTML = `<div class="error">Hmm — I couldn’t complete the quote. ${e.message}</div>`;
-    } finally {
-      quoteBtn.disabled = false;
-      quoteBtn.textContent = oldText;
-    }
-  }
-
-  quoteBtn?.addEventListener('click', requestQuote);
-})();
-</script>
 <body>
-  <div class="wrap">
-    <div class="brand"><img src="/logo.png" alt="Cinematic Videographers" onerror="this.style.display='none'"></div>
+  <header>
+    <img class="logo" src="/CV-Logo-Big%20Medium.png" alt="Cinematic Videographers" />
     <h1>Ask Nora for a Quote</h1>
     <div class="sub">Our AI assistant can generate instant videography quotes for your clients.</div>
+  </header>
 
-    <div class="card">
-      <!-- Intro line -->
-      <div class="row">
-        <div class="field"><span class="muted">Hi! I’m Nora. I’ll get you a quick quote in a few taps.</span></div>
-      </div>
+  <div class="wrap">
+    <div class="chat">
+      <div class="bar">Hi! I’m Nora. I’ll get you a quick quote in a few taps.</div>
 
-      <!-- 1) Event date + 2) Location -->
-      <div class="row twocol">
-        <div>
-          <div class="label">What is your event date?</div>
-          <div class="field">
-            <input id="eventDate" class="input" type="date" aria-label="Event Date" />
-          </div>
-          <div class="note">Date format sent as <b>dd/MM/yyyy</b>.</div>
+      <div class="window" id="chat">
+        <div class="msgs" id="msgs"></div>
+
+        <!-- Quick controls Nora will show and update (date, location, hours, add-ons) -->
+        <div id="controls"></div>
+
+        <div class="input">
+          <input id="box" type="text" placeholder="Type here…" autocomplete="off">
+          <button class="send" id="send">Send</button>
         </div>
-
-        <div>
-          <div class="label">Where is your event located?</div>
-          <div class="field">
-            <input id="eventLocation" class="input" type="text" placeholder="Address or City, ST  ZIP" />
-          </div>
-        </div>
-      </div>
-
-      <!-- 3) Coverage hours -->
-      <div class="row">
-        <div class="label">Video Coverage — hours (4-hour minimum)</div>
-        <div class="chips" id="hoursChips">
-          <div class="chip active" data-val="4">4</div>
-          <div class="chip" data-val="6">6</div>
-          <div class="chip" data-val="8">8</div>
-          <div class="chip" data-val="10">10</div>
-        </div>
-      </div>
-
-      <!-- 4) Videography add-ons -->
-      <div class="row">
-        <div class="label">Videography add-ons</div>
-        <div class="chips" id="addonsChips">
-          <div class="chip" data-key="drone">Drone</div>
-          <div class="chip" data-key="livestream">Livestream</div>
-          <div class="chip" data-key="rush48">Rush 48 hr</div>
-          <div class="chip" data-key="rush24">Rush 24 hr</div>
-        </div>
-      </div>
-
-      <!-- 5) Post-Production -->
-      <div class="row">
-        <div class="label">Post-Production</div>
-        <div class="chips" id="postChips">
-          <div class="chip" data-key="postSocial">Social Media Edit</div>
-          <div class="chip" data-key="postStudio">Highlights-(Studio Edit)</div>
-          <div class="chip" data-key="postClient">Highlights-(Client-Directed)</div>
-           <div class="chip" data-key="postClient">Full Program Edit</div>
-        </div>
-      </div>
-
-      <!-- Get Quote -->
-      <div class="actions">
-        <button class="btn" id="quoteBtn">Get Quote</button>
-        <div id="status" class="note"></div>
-      </div>
-
-      <!-- Results -->
-      <div id="results" style="display:none">
-        <div class="total">Total: <span id="total">$0</span></div>
-        <div class="breakdown" id="breakdown"></div>
       </div>
     </div>
-
-    <footer>© Cinematic Videographers · Nora Assistant</footer>
   </div>
 
-  <script>
-    // --- helpers -----------------------------------------------------------
-    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
-    const $  = (sel, el=document) => el.querySelector(sel);
-
-    // hours chips (single-select)
-    const hoursChips = $('#hoursChips');
-    hoursChips.addEventListener('click', (e)=>{
-      const c = e.target.closest('.chip'); if(!c) return;
-      $$('.chip', hoursChips).forEach(x=>x.classList.remove('active'));
-      c.classList.add('active');
-    });
-
-    // generic multi-select chips
-    function setupMulti(id){
-      const box = $(id);
-      box.addEventListener('click', (e)=>{
-        const c = e.target.closest('.chip'); if(!c) return;
-        c.classList.toggle('active');
-      });
-    }
-    setupMulti('#addonsChips');
-    setupMulti('#postChips');
-
-    function formatDdMmYyyyFromDateInput(v){
-      // input[type=date] -> "yyyy-mm-dd"
-      if(!v) return "";
-      const [y,m,d] = v.split('-');
-      if(!y||!m||!d) return "";
-      return `${d}/${m}/${y}`;
-    }
-
-    function extractZip(text){
-      // returns first 5-digit string (very tolerant)
-      const m = String(text||'').match(/\b(\d{5})\b/);
-      return m ? m[1] : "";
-    }
-
-    function money(n){ return `$${(Math.round(n)).toLocaleString()}`; }
-
-    // --- submit ------------------------------------------------------------
-    $('#quoteBtn').addEventListener('click', async ()=>{
-      const status = $('#status');
-      const out    = $('#results');
-      const bkd    = $('#breakdown');
-      const totEl  = $('#total');
-
-      status.textContent = "Calculating your quote…";
-      out.style.display = 'none';
-      bkd.innerHTML = '';
-
-      const hours = Number($('.chip.active', hoursChips).dataset.val || 4);
-
-      const addons = {};
-      $$('#addonsChips .chip.active').forEach(c => addons[c.dataset.key] = true);
-
-      // collect (not priced yet)
-      const post = {};
-      $$('#postChips .chip.active').forEach(c => post[c.dataset.key] = true);
-
-      const eventDateRaw = $('#eventDate').value; // yyyy-mm-dd
-      const eventDate    = formatDdMmYyyyFromDateInput(eventDateRaw);
-      const location     = $('#eventLocation').value.trim();
-      const eventZip     = extractZip(location);
-
-      if(!eventDate){
-        status.textContent = "Please select a valid date.";
-        return;
-      }
-
-      // Build payload
-      const payload = {
-        eventType: "Other",
-        hours,
-        eventDate,       // dd/MM/yyyy
-        eventZip,
-        addons,
-        post            // sent for later API wiring
-      };
-
-      try{
-        const r = await fetch('/api/quote', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(payload)
-        });
-        const data = await r.json();
-
-        if(!data.ok){
-          status.textContent = data.error || "Could not complete the quote.";
-          return;
-        }
-
-        // Render client-visible lines only
-        (data.breakdown || []).forEach(item=>{
-          if(item.visible){
-            const row = document.createElement('div');
-            row.className = 'item';
-            row.innerHTML = `<div>${item.label}</div><div><strong>${money(item.amount)}</strong></div>`;
-            bkd.appendChild(row);
-          }
-        });
-
-        totEl.textContent = money(data.total);
-        out.style.display = 'block';
-        status.textContent = "";
-      }catch(err){
-        console.error(err);
-        status.textContent = "Server error. Please try again.";
-      }
-    });
-  </script>
+  <script src="/nora-chat.js"></script>
 </body>
 </html>
