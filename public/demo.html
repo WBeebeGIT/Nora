@@ -3,140 +3,101 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ask Nora for a Quote</title>
+  <title>Nora — Instant Quote Chat</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg:#ffffff;--ink:#111827;--muted:#6b7280;--ring:#e5e7eb;
-      --pill:#f3f4f6;--pill-active:#111827;--pill-active-ink:#fff;
-      --box:#ffffff;--shadow:0 10px 30px rgba(17,24,39,.08);
+      --ink:#0b0d0f; --ink-2:#2b2f33; --bg:#ffffff; --chip:#111; --chip-ink:#fff;
+      --muted:#6b7280; --ring:#0ea5e9; --card:#fff; --shadow:0 12px 45px rgba(16,24,40,.08);
+      --radius:18px;
     }
-    html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif}
-    .wrap{max-width:980px;margin:28px auto;padding:0 16px}
-    header{display:grid;place-items:center;gap:10px;margin-bottom:18px}
-    header img{height:40px;opacity:.9}
-    h1{font-size:40px;line-height:1.1;margin:8px 0 4px 0;font-weight:800;text-align:center}
-    p.sub{margin:0 0 18px 0;color:var(--muted);text-align:center}
-
-    .card{background:var(--box);border-radius:16px;box-shadow:var(--shadow);padding:14px 14px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-    .row.single{grid-template-columns:1fr}
-    .label{font-weight:600;margin:8px 0 6px 6px}
-    .muted{color:var(--muted);font-size:14px;margin-left:6px}
-
-    input[type="text"],input[type="date"]{
-      width:100%;height:44px;border:1px solid var(--ring);border-radius:10px;padding:0 12px;
-      font:inherit;color:inherit;background:#fff;box-sizing:border-box;
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:var(--ink); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-
-    .pills{display:flex;flex-wrap:wrap;gap:10px}
-    .pill{
-      background:var(--pill);border:1px solid var(--ring);height:38px;padding:0 14px;border-radius:999px;
-      display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none
+    header{
+      padding:28px 20px 8px; text-align:center;
     }
-    .pill.active{background:var(--pill-active);border-color:var(--pill-active);color:var(--pill-active-ink)}
-
-    .actions{display:flex;gap:10px;align-items:center;margin-top:12px}
-    .btn{
-      height:42px;padding:0 16px;border-radius:10px;border:1px solid var(--ink);
-      background:var(--ink);color:#fff;cursor:pointer;font-weight:600
+    .logo{ display:block; margin:0 auto 12px; width:240px; max-width:70vw; }
+    h1{ margin:0 0 8px; font-size:38px; font-weight:800; letter-spacing:-0.01em;}
+    .sub{ color:var(--muted); font-size:15px;}
+    .wrap{
+      max-width:980px; margin:28px auto 40px; padding:0 16px;
     }
-    .btn:disabled{opacity:.6;cursor:not-allowed}
-
-    /* Quote summary */
-    #nora-quote{margin-top:16px;border-top:1px solid var(--ring)}
-    .nora-qrow{display:flex;justify-content:space-between;padding:12px 6px;border-bottom:1px solid var(--ring)}
-    .nora-qmuted{color:var(--muted);padding:12px 6px}
-    .nora-qerror{color:#b91c1c;background:#fff0f0;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;margin-top:12px}
-
-    /* Optional chat box at top */
-    #chatCard{margin-bottom:18px}
-    #nora-talk{height:260px;overflow:auto;border:1px solid var(--ring);border-radius:12px;padding:10px;background:#fff}
-    .nora-bubble{max-width:80%;background:#f3f4f6;border-radius:12px;padding:8px 10px;margin:6px 0}
-    .nora-assistant{background:#eef2ff}
-    .nora-user{background:#e5f9ee;margin-left:auto}
-    #chatInputRow{display:flex;gap:10px;margin-top:10px}
-    #nora-input{flex:1}
+    .chat{
+      background:var(--card); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:20px;
+      width:min(980px, 92vw); margin:0 auto;
+    }
+    .bar{
+      display:flex; align-items:center; gap:12px; margin-bottom:14px;
+      border:1px solid #eef2f7; background:#f9fafb; color:#111; padding:10px 12px; border-radius:12px;
+      font-size:14px;
+    }
+    .window{
+      border-radius:16px; border:1px solid #eef2f7; background:#fff; min-height:520px;
+      padding:16px; display:flex; flex-direction:column; gap:10px;
+    }
+    .msgs{ flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:2px;}
+    .msg{ max-width:80%; padding:10px 12px; border-radius:14px; line-height:1.35; font-size:15px; box-shadow:0 1px 0 rgba(0,0,0,.03);}
+    .me{ align-self:flex-end; background:#111; color:#fff; border-top-right-radius:6px;}
+    .her{ align-self:flex-start; background:#f1f5f9; color:#0b0d0f; border-top-left-radius:6px;}
+    .row{ display:flex; gap:8px; flex-wrap:wrap; }
+    .chip{
+      appearance:none; border:1px solid #d1d5db; padding:8px 12px; border-radius:999px; cursor:pointer;
+      background:#fff; color:#111; font-size:14px;
+    }
+    .chip[data-active="1"]{ background:#111; color:#fff; border-color:#111;}
+    .input{
+      display:flex; gap:8px; align-items:center; border-top:1px solid #eef2f7; padding-top:10px;
+    }
+    input[type="text"], input[type="date"]{
+      flex:1; padding:12px 12px; border-radius:12px; border:1px solid #e5e7eb; font-size:14px;
+    }
+    button.send{
+      padding:11px 14px; border-radius:12px; border:0; background:#111; color:#fff; cursor:pointer;
+    }
+    .line{ height:1px; background:#f0f2f5; margin:4px 0 8px; }
+    .total{
+      margin-top:8px; border-radius:12px; background:#fafafa; border:1px solid #eee; padding:12px;
+      font-size:14px;
+    }
+    .li{ display:flex; justify-content:space-between; padding:4px 0;}
+    .bold{ font-weight:700;}
+    .muted{ color:#6b7280;}
+    @media (max-width:640px){
+      h1{font-size:30px}
+      .window{min-height:460px}
+    }
   </style>
 </head>
 <body>
+  <header>
+    <img class="logo" src="/CV-Logo-Big%20Medium.png" alt="Cinematic Videographers" />
+    <h1>Ask Nora for a Quote</h1>
+    <div class="sub">Our AI assistant can generate instant videography quotes for your clients.</div>
+  </header>
+
   <div class="wrap">
-    <header>
-      <img src="/public/assets/CV-Logo.png" alt="Cinematic Videographers" />
-      <h1>Ask Nora for a Quote</h1>
-      <p class="sub">Our AI assistant can generate instant videography quotes for your clients.</p>
-    </header>
+    <div class="chat">
+      <div class="bar">Hi! I’m Nora. I’ll get you a quick quote in a few taps.</div>
 
-    <!-- Optional chat box (kept; harmless if unused) -->
-    <section id="chatCard" class="card">
-      <div class="nora-bubble nora-assistant">Hi! I’m Nora. I’ll get you a quick quote in a few taps.</div>
-      <div id="nora-talk"></div>
-      <div id="chatInputRow">
-        <input id="nora-input" type="text" placeholder="Type here…" />
-        <button id="nora-send" class="btn">Send</button>
-      </div>
-    </section>
+      <div class="window" id="chat">
+        <div class="msgs" id="msgs"></div>
 
-    <!-- Quote UI -->
-    <section class="card">
-      <div class="row">
-        <div>
-          <div class="label">What is your event date?</div>
-          <input id="nora-date" type="date" />
-          <div class="muted">Date format sent as <strong>dd/MM/yyyy</strong>.</div>
-        </div>
-        <div>
-          <div class="label">Where is your event located?</div>
-          <input id="nora-loc" type="text" placeholder="City or ZIP" />
+        <!-- Quick controls Nora will show and update (date, location, hours, add-ons) -->
+        <div id="controls"></div>
+
+        <div class="input">
+          <input id="box" type="text" placeholder="Type here…" autocomplete="off">
+          <button class="send" id="send">Send</button>
         </div>
       </div>
-
-      <div class="row single">
-        <div>
-          <div class="label">Video Coverage — hours (4-hour minimum)</div>
-          <div class="pills" id="hourPills">
-            <button class="pill active" data-hours="4">4</button>
-            <button class="pill" data-hours="6">6</button>
-            <button class="pill" data-hours="8">8</button>
-            <button class="pill" data-hours="10">10</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="row single">
-        <div>
-          <div class="label">Videography add-ons</div>
-          <div class="pills" id="addonsPills">
-            <button class="pill" data-addon="drone">Drone</button>
-            <button class="pill" data-addon="livestream">Livestream</button>
-            <button class="pill" data-addon="rush48">Rush 48 hr</button>
-            <button class="pill" data-addon="rush24">Rush 24 hr</button>
-            <button class="pill" data-addon="usb">USB Raw Footage Drive</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="row single">
-        <div>
-          <div class="label">Post-Production</div>
-          <div class="pills" id="postPills">
-            <button class="pill" data-addon="social">Social Media Edit</button>
-            <button class="pill" data-addon="studio">Highlights – (Studio Edit)</button>
-            <button class="pill" data-addon="client">Highlights – (Client-Directed)</button>
-            <button class="pill" data-addon="full">Full Program Edit</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button id="nora-get" class="btn">Get Quote</button>
-        <span id="nora-status" class="muted"></span>
-      </div>
-
-      <div id="nora-quote"></div>
-    </section>
+    </div>
   </div>
 
-  <!-- Your JS controller (the fixed one you just pasted) -->
-  <script src="/public/nora-chat.js"></script>
+  <script src="/nora-chat.js"></script>
 </body>
 </html>
