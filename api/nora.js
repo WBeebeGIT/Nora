@@ -1,100 +1,89 @@
-// api/nora.js
-export const config = { runtime: 'edge' };
+// /api/nora.js
+// Vercel Serverless Function — calculates the quote and replies to the UI
 
-const USD = n => Math.round(n);
+const HOURLY          = 400; // lead videography coverage
+const MIN_HOURS       = 4;
+const TRAVEL_FLAT     = 200; // always added silently (NOT shown in line items)
 
-// ------- QUOTE MATH -------
-function buildQuote(state){
-  const hours = Math.max(4, Number(state.hours || 4)); // 4-hour minimum
-  const addons = state.addons || {};
-  const location = (state.location || '').trim();
+// Flat-price add-ons
+const PRICES = {
+  drone: 700,
+  livestream: 700,
+  rush48: 200,
+  rush24: 400,
+  usb: 100,
 
-  // Base coverage math (rate hidden in UI label)
-  const coverage = 400 * hours;
+  // Post-production (set to 0 for now; wire real values when ready)
+  social: 0,            // Social Media Edit
+  studio: 0,            // Highlights – (Studio Edit)
+  clientDirected: 0,    // Highlights – (Client-Directed)
+  fullProgram: 0        // Full Program Edit
+};
 
-  // Add-ons
-  let add = 0;
-  const items = [
-    // Hides "$400/hr" text but math is unchanged.
-    { label: `Coverage (${hours} hrs)`, price: USD(coverage) }
+function calcQuote(state) {
+  const hours = Math.max(MIN_HOURS, Number(state?.hours) || MIN_HOURS);
+
+  // Base coverage (we do NOT expose the $/hr in UI; this is server-side only)
+  const coverage = HOURLY * hours;
+
+  const lineItems = [
+    { label: `Coverage (${hours} hrs)`, price: coverage, note: null }
+    // IMPORTANT: no travel line item here
   ];
 
-  if(addons.drone){ add += 700; items.push({ label: 'Drone', price: 700 }); }
-  if(addons.livestream){ add += 700; items.push({ label: 'Livestream', price: 700 }); }
-  if(addons.rush48){ add += 200; items.push({ label: 'Rush 48 hr', price: 200 }); }
-  if(addons.rush24){ add += 400; items.push({ label: 'Rush 24 hr', price: 400 }); }
-  if(addons.usb){ add += 100; items.push({ label: 'Raw Footage USB Drive', price: 100 }); }
+  // Videography add-ons
+  if (state?.addons?.drone)        lineItems.push({ label: 'Drone',        price: PRICES.drone });
+  if (state?.addons?.livestream)   lineItems.push({ label: 'Livestream',   price: PRICES.livestream });
+  if (state?.addons?.rush48)       lineItems.push({ label: 'Rush 48 hr',   price: PRICES.rush48 });
+  if (state?.addons?.rush24)       lineItems.push({ label: 'Rush 24 hr',   price: PRICES.rush24 });
+  if (state?.addons?.usb)          lineItems.push({ label: 'USB Raw Footage Drive', price: PRICES.usb });
 
-  if(addons.social){ add += 100; items.push({ label: 'Post: Social Media Edit', price: 100 }); }
-  if(addons.studio){ add += 600; items.push({ label: 'Post: Highlights (Studio Edit)', price: 600 }); }
-  if(addons.clientDirected){ add += 600; items.push({ label: 'Post: Highlights (Client-Directed)', price: 600 }); }
-  if(addons.fullProgram){ add += 350; items.push({ label: 'Post: Full Program Edit', price: 350 }); }
+  // Post-production selections (currently $0 until you decide pricing)
+  if (state?.addons?.social)         lineItems.push({ label: 'Social Media Edit',                price: PRICES.social });
+  if (state?.addons?.studio)         lineItems.push({ label: 'Highlights – (Studio Edit)',       price: PRICES.studio });
+  if (state?.addons?.clientDirected) lineItems.push({ label: 'Highlights – (Client-Directed)',   price: PRICES.clientDirected });
+  if (state?.addons?.fullProgram)    lineItems.push({ label: 'Full Program Edit',                price: PRICES.fullProgram });
 
-  // Travel: show when location is present; amount TBD for now
-  if(location){
-    items.push({ label: 'Travel', price: 0, note: 'TBD (based on final location)' });
+  const subtotal = lineItems.reduce((s, li) => s + (li.price || 0), 0);
+
+  // Always add $200 travel silently (not added to lineItems)
+  const total = subtotal + TRAVEL_FLAT;
+
+  return {
+    lineItems,     // shown in the UI summary
+    total,         // includes the silent $200 travel
+    meta: {
+      hours,
+      // you can inspect state.date / state.location here if needed,
+      // but we intentionally do not expose travel as a visible row
+    }
+  };
+}
+
+function conversationalReply(payload, state) {
+  // Keep replies simple and neutral; rates remain server-side
+  if (payload?.type === 'update') {
+    if (!state?.date)      return "Great — pick a date and I’ll update your quote.";
+    if (!state?.location)  return "Got it. Add your city or ZIP and I’ll refine the quote.";
+    return "Updated your quote with the latest selections.";
   }
-
-  const total = USD(coverage + add);
-  return { total, lineItems: items };
-}
-
-// --------- MINI CONVERSATION ENGINE ----------
-function needMore(state){
-  if(!state?.date) return 'date';
-  if(!state?.location) return 'location';
-  if(!state?.hours) return 'hours';
-  return null;
-}
-
-export default async function handler(req){
-  try{
-    const { payload, state } = await req.json();
-
-    if(payload?.type === 'hello'){
-      const missing = needMore(state);
-      if(missing === 'date')      return json({ reply: 'Please set your event date (calendar above), then pick hours and any add-ons.', state });
-      if(missing === 'location')  return json({ reply: 'Got it. What city or ZIP is the event in?', state });
-      const quote = buildQuote(state);
-      return json({ reply: 'All set. Here’s a quick quote you can refine with add-ons:', quote, state });
-    }
-
-    if(payload?.type === 'update'){
-      const missing = needMore(state);
-      if(!missing){
-        const quote = buildQuote(state);
-        return json({ reply: 'Updated your quote with the latest selections.', quote, state });
-      }
-      if(missing === 'location') return json({ reply: 'What city or ZIP is the event in?', state });
-      if(missing === 'hours')    return json({ reply: 'Choose your coverage hours (4, 6, 8, or 10).', state });
-      return json({ state });
-    }
-
-    if(payload?.type === 'user'){
-      const text = (payload.text || '').toLowerCase();
-      if(text.includes('date'))   return json({ reply:'Use the calendar above to set your event date (dd/mm/yyyy).', state });
-      if(text.includes('hours') || text.includes('coverage'))
-        return json({ reply:'Choose 4, 6, 8, or 10 hours. 4-hour minimum is enforced.', state });
-      if(text.includes('quote') || text.includes('total')){
-        const missing = needMore(state);
-        if(!missing){
-          const quote = buildQuote(state);
-          return json({ reply:'Here’s your current quote:', quote, state });
-        }
-        return json({ reply:'Set your date, location, and hours to get a quote.', state });
-      }
-      return json({ reply:'I’m listening. You can also toggle add-ons below and I’ll update the quote automatically.', state });
-    }
-
-    return json({ reply:'Let me know your date, location, and hours to get started.', state });
-  }catch(e){
-    return json({ reply:'Hmm — I couldn’t complete that. Try again in a moment.', error:String(e) }, 200);
+  if (payload?.type === 'user') {
+    return "Thanks! I’ve updated your quote.";
   }
+  return "Okay! I’ve refreshed your quote.";
 }
 
-function json(obj, status=200){
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers:{'content-type':'application/json'}
-  });
+export default async function handler(req, res) {
+  try {
+    const { payload, state } = req.body || {};
+    const reply = conversationalReply(payload, state);
+    const quote = calcQuote(state || {});
+    res.status(200).json({ reply, quote, state });
+  } catch (err) {
+    console.error(err);
+    res.status(200).json({
+      reply: "Hmm — I couldn’t complete the quote.",
+      quote: { lineItems: [], total: 0 },
+    });
+  }
 }
