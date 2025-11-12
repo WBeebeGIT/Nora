@@ -3,292 +3,169 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nora – Quote Demo</title>
-  <link rel="icon" href="/favicon.ico" />
+  <title>Ask Nora for a Quote</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
+    :root{
       --bg: #ffffff;
-      --text: #111827;       /* charcoal */
-      --muted: #6b7280;      /* gray-500 */
-      --border: #e5e7eb;     /* gray-200 */
-      --card: #ffffff;
-      --shadow: 0 10px 25px rgba(0,0,0,.08);
-      --pill-bg: #111827;    /* dark pill */
-      --pill-text: #fff;
-      --pill-bg-active: #374151;
-      --input-bg: #ffffff;
-      --input-border: #d1d5db;
-      --input-focus: #111827;
-      --btn-bg: #111827;
-      --btn-text: #ffffff;
-      --btn-bg-hover: #000000;
+      --ink: #111827;        /* near black */
+      --ink-2:#374151;       /* slate */
+      --border:#e5e7eb;      /* gray-200 */
+      --muted:#6b7280;       /* gray-500 */
+      --accent:#111827;
+      --accent-ink:#ffffff;
+      --chip:#1118270f;      /* faint */
+      --shadow: 0 10px 30px rgba(17,24,39,.08);
+      --radius:16px;
     }
-    html, body {
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
+      color:var(--ink);
     }
-    .wrap {
-      max-width: 900px;
-      margin: 40px auto 48px;
-      padding: 0 16px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 18px;
-    }
-    header img.logo {
-      height: 52px;
-      width: auto;
-      object-fit: contain;
-      margin-bottom: 6px;
-    }
-    h1 {
-      margin: 8px 0 6px;
-      font-size: 32px;
-      line-height: 1.1;
-      letter-spacing: .1px;
-      font-weight: 700;
-    }
-    .sub {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 22px;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      padding: 22px;
-    }
-    .row { margin-bottom: 14px; }
-    .bubble {
-      background: #f3f4f6;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-    }
-    .pills { display:flex; flex-wrap: wrap; gap: 10px; }
-    .pill {
-      background: var(--pill-bg);
-      color: var(--pill-text);
-      border: 1px solid transparent;
-      height: 36px;
-      padding: 0 14px;
-      border-radius: 999px;
-      display:inline-flex;
-      align-items:center;
-      cursor:pointer;
-      font-size: 14px;
-      user-select:none;
-    }
-    .pill[aria-pressed="true"] {
-      background: var(--pill-bg-active);
-    }
-    input[type="date"], input[type="text"] {
-      width: 100%;
-      background: var(--input-bg);
-      color: var(--text);
-      border: 1px solid var(--input-border);
-      border-radius: 8px;
-      height: 42px;
-      padding: 0 12px;
-      font-size: 16px;
-      outline: none;
-    }
-    input[type="date"]:focus, input[type="text"]:focus {
-      border-color: var(--input-focus);
-      box-shadow: 0 0 0 3px rgba(17,24,39,.12);
-    }
-    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
-    .actions { margin-top: 12px; }
-    button.primary {
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      border: 1px solid transparent;
-      border-radius: 10px;
-      height: 40px;
-      padding: 0 16px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button.primary:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
-    button.primary:hover:not(:disabled) {
-      background: var(--btn-bg-hover);
-    }
-
-    /* Results pane */
-    .results {
-      margin-top: 18px;
-      border-top: 1px dashed var(--border);
-      padding-top: 12px;
-    }
-    .line {
-      background: #f3f4f6;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
+    .wrap{
+      max-width:980px;
+      margin:40px auto 80px;
+      padding:0 20px;
       display:flex;
-      justify-content:space-between;
-      gap: 12px;
+      flex-direction:column;
+      align-items:center;
+      gap:18px;
     }
-    .total {
-      font-size: 18px;
-      font-weight: 800;
-      padding: 12px;
-      border-radius: 10px;
-      background: #111827;
-      color: #fff;
-      display:inline-block;
-      min-width: 130px;
+    .logo{
+      display:block;
+      width:260px;
+      height:auto;
+      opacity:.92;
+    }
+    h1{
+      margin:8px 0 0;
+      font-size:clamp(28px,3.4vw,40px);
+      line-height:1.1;
       text-align:center;
+      font-weight:800;
+      letter-spacing:-0.02em;
     }
-
-    footer {
+    .sub{
       text-align:center;
-      color: var(--muted);
-      font-size: 12px;
-      margin: 24px 0 10px;
+      color:var(--muted);
+      font-size:15px;
+      margin-top:2px;
     }
+    .card{
+      width:100%;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .label{
+      display:block; font-size:14px; font-weight:600; margin:12px 0 6px; color:var(--ink);
+    }
+    .pill{
+      appearance:none; border:1px solid var(--border); background:#fff; color:var(--ink);
+      padding:10px 14px; border-radius:999px; font-size:14px; cursor:pointer;
+    }
+    .pill[aria-pressed="true"]{
+      background:var(--accent); color:var(--accent-ink); border-color:var(--accent);
+    }
+    .seg{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    input[type="date"], input[type="text"]{
+      width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px; font-size:15px; color:var(--ink);
+      background:#fff;
+    }
+    .hint{font-size:12px; color:var(--muted); margin-top:6px}
+    .actions{margin-top:14px; display:flex; gap:10px; align-items:center}
+    .btn{
+      appearance:none; border:1px solid var(--accent); background:var(--accent); color:#fff; font-weight:600;
+      padding:12px 16px; border-radius:10px; cursor:pointer;
+    }
+    .btn[disabled]{opacity:.5; cursor:not-allowed}
+    .line{
+      width:100%; background:#f9fafb; border:1px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--ink-2);
+    }
+    .breakdown{margin-top:18px; display:grid; gap:8px}
+    .pair{display:flex; justify-content:space-between; gap:14px}
+    .total{display:flex; justify-content:space-between; margin-top:8px; padding-top:10px; border-top:1px dashed var(--border); font-weight:700}
+    footer{margin-top:14px; text-align:center; color:var(--muted); font-size:12px}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width:640px){ .grid2{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <!-- Put your logo in /public (e.g., /CV-Logo-Big-Medium.png) and update src below -->
-      <img class="logo" src="/CV-Logo-Big Medium.png" alt="Cinematic Videographers" />
-      <h1>Ask Nora for a Quote</h1>
-      <div class="sub">Our AI assistant can generate instant videography quotes for your clients.</div>
-    </header>
+    <img class="logo" src="/cv-logo.png" alt="Cinematic Videographers" />
+    <h1>Ask Nora for a Quote</h1>
+    <div class="sub">Our AI assistant can generate instant videography quotes for your clients.</div>
 
-    <section class="card" id="quoteCard">
-      <div class="row">
-        <div class="bubble">Hi! I’m Nora. I’ll get you a quick quote in a few taps.</div>
+    <div class="card" id="nora-card">
+      <div class="line">Hi! I’m Nora. I’ll get you a quick quote in a few taps.</div>
+
+      <label class="label">What type of event is this? (Corporate, Wedding, Mitzvah, Other)</label>
+      <div class="seg" id="eventTypeSeg">
+        <button class="pill" data-value="Corporate">Corporate</button>
+        <button class="pill" data-value="Wedding">Wedding</button>
+        <button class="pill" data-value="Mitzvah">Mitzvah</button>
+        <button class="pill" data-value="Other">Other</button>
       </div>
 
-      <div class="row">
-        <div class="bubble">What type of event is this? (Corporate, Wedding, Mitzvah, Other)</div>
+      <div class="grid2">
+        <div>
+          <label class="label">Hours</label>
+          <div class="seg" id="hoursSeg">
+            <button class="pill" data-value="4">4</button>
+            <button class="pill" data-value="6">6</button>
+            <button class="pill" data-value="8">8</button>
+            <button class="pill" data-value="10">10</button>
+          </div>
+        </div>
+        <div>
+          <label class="label">Event Date</label>
+          <input id="eventDate" type="date" placeholder="dd/MM/yyyy" />
+          <div class="hint">Event date (format: dd/MM/yyyy)</div>
+        </div>
       </div>
 
-      <div class="row pills" id="eventPills" role="group" aria-label="Event Type">
-        <button class="pill" data-type="Corporate" aria-pressed="false">Corporate</button>
-        <button class="pill" data-type="Wedding" aria-pressed="false">Wedding</button>
-        <button class="pill" data-type="Mitzvah" aria-pressed="false">Mitzvah</button>
-        <button class="pill" data-type="Other" aria-pressed="false">Other</button>
+      <label class="label">Crew & Add-ons</label>
+      <div class="seg" id="addonsSeg">
+        <button class="pill" data-key="secondShooter" aria-pressed="false">Second Shooter</button>
+        <button class="pill" data-key="audioTech" aria-pressed="false">Audio/Lighting Tech</button>
+        <button class="pill" data-key="drone" aria-pressed="false">Drone</button>
+        <button class="pill" data-key="livestream" aria-pressed="false">Livestream</button>
+        <button class="pill" data-key="rush48" aria-pressed="false">Rush 48 hr</button>
+        <button class="pill" data-key="rush24" aria-pressed="false">Rush 24 hr</button>
+        <button class="pill" data-key="usb" aria-pressed="true" disabled>USB Raw Footage Drive</button>
       </div>
 
-      <div class="row">
-        <!-- Native calendar picker; we’ll format to dd/MM/yyyy on submit -->
-        <input id="eventDate" type="date" aria-label="Event date" />
-        <div class="hint">Event date (format: dd/MM/yyyy)</div>
+      <label class="label">Location</label>
+      <div class="seg" id="locationSeg">
+        <button class="pill" data-value="local" aria-pressed="true">Local (≤ 1.5 hr)</button>
+        <button class="pill" data-value="travel_far">Travel &gt; 1.5 hr</button>
       </div>
 
       <div class="actions">
-        <button id="getQuote" class="primary" disabled>Get Quote</button>
+        <button id="getQuoteBtn" class="btn" disabled>Get Quote</button>
+        <div id="statusText" class="hint"></div>
       </div>
 
-      <div class="results" id="results" hidden></div>
-    </section>
+      <div class="breakdown" id="quoteArea" hidden>
+        <div id="quoteLines"></div>
+        <div class="total"><span>Total</span><span id="quoteTotal"></span></div>
+      </div>
+    </div>
 
     <footer>© Cinematic Videographers · Nora Assistant</footer>
   </div>
 
-  <script>
-    // --- UI state ---
-    let eventType = null;
-    const pills = Array.from(document.querySelectorAll('#eventPills .pill'));
-    const dateEl = document.getElementById('eventDate');
-    const btn = document.getElementById('getQuote');
-    const results = document.getElementById('results');
-
-    pills.forEach(p => {
-      p.addEventListener('click', () => {
-        pills.forEach(x => x.setAttribute('aria-pressed', 'false'));
-        p.setAttribute('aria-pressed', 'true');
-        eventType = p.dataset.type;
-        updateButtonState();
-      });
-    });
-
-    dateEl.addEventListener('change', updateButtonState);
-
-    function updateButtonState() {
-      const hasDate = Boolean(dateEl.value);
-      btn.disabled = !(eventType && hasDate);
-    }
-
-    function formatDDMMYYYY(yyyyDashMmDashDd) {
-      // input from <input type="date"> is yyyy-mm-dd
-      if (!yyyyDashMmDashDd || !yyyyDashMmDashDd.includes('-')) return '';
-      const [y, m, d] = yyyyDashMmDashDd.split('-');
-      return `${d}/${m}/${y}`;
-    }
-
-    function money(n) {
-      return n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    }
-
-    btn.addEventListener('click', async () => {
-      btn.disabled = true;
-
-      // Build request payload. Add any future fields here:
-      const payload = {
-        eventType,                 // 'Corporate' | 'Wedding' | 'Mitzvah' | 'Other'
-        eventDate: formatDDMMYYYY(dateEl.value),
-        hours: 4,                  // default shown; your API enforces 4-hour minimum anyway
-        crew: { lead: 1, second: 0 },
-        locationType: 'local',
-        addons: {
-          secondShooter: false,
-          drone: false,
-          livestream: false,
-          rush48: false,
-          rush24: false
-        }
-      };
-
-      // UI feedback
-      results.hidden = false;
-      results.innerHTML = `
-        <div class="line"><span>Great — calculating your quote…</span></div>
-      `;
-
-      try {
-        const r = await fetch('/api/quote', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await r.json();
-
-        if (!r.ok || typeof data.total !== 'number') {
-          results.innerHTML = `
-            <div class="line"><span>Hmm — I couldn’t complete the quote. ${data?.error ? '('+data.error+')' : ''}</span></div>
-          `;
-          btn.disabled = false;
-          return;
-        }
-
-        // Render breakdown + total
-        let html = '';
-        (data.breakdown || []).forEach(item => {
-          html += `<div class="line"><span>${item.label}</span><span>${money(item.amount || 0)}</span></div>`;
-        });
-        html += `<div class="line" style="justify-content:flex-end"><span class="total">${money(data.total)}</span></div>`;
-        results.innerHTML = html;
-      } catch (err) {
-        results.innerHTML = `<div class="line"><span>Network error. Please try again.</span></div>`;
-      } finally {
-        btn.disabled = false;
-      }
-    });
-  </script>
+  <!-- Nora UI logic -->
+  <script src="/nora-chat.js"></script>
 </body>
 </html>
