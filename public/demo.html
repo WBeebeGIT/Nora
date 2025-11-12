@@ -1,1 +1,250 @@
-<!-- demo.html placeholder -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ask Nora for a Quote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      :root {
+        --bg: #f5f5f7;
+        --card: #ffffff;
+        --border: #e0e0e0;
+        --accent: #111827;
+        --accent-soft: #e5e7eb;
+        --text-main: #111827;
+        --text-muted: #6b7280;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: radial-gradient(circle at top, #f9fafb, #e5e7eb);
+        color: var(--text-main);
+      }
+
+      .page {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 32px 16px 48px;
+      }
+
+      .logo {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+
+      .logo img {
+        max-width: 260px;
+        height: auto;
+        opacity: 0.85;
+      }
+
+      .title {
+        text-align: center;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: var(--text-muted);
+        margin-bottom: 24px;
+        font-size: 14px;
+      }
+
+      .chat-card {
+        background: var(--card);
+        border-radius: 18px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.1);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        display: flex;
+        flex-direction: column;
+        height: min(70vh, 620px);
+        overflow: hidden;
+      }
+
+      .chat-header {
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(to right, #111827, #1f2937);
+        color: white;
+      }
+
+      .chat-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: #f97316;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .chat-title {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .chat-subtitle {
+        font-size: 12px;
+        opacity: 0.9;
+      }
+
+      .chat-body {
+        flex: 1;
+        padding: 16px 18px;
+        overflow-y: auto;
+        background: #f9fafb;
+      }
+
+      .bubble-row {
+        display: flex;
+        margin-bottom: 10px;
+      }
+
+      .bubble-row.user {
+        justify-content: flex-end;
+      }
+
+      .bubble-row.assistant {
+        justify-content: flex-start;
+      }
+
+      .bubble {
+        max-width: 75%;
+        padding: 10px 13px;
+        border-radius: 16px;
+        font-size: 14px;
+        line-height: 1.45;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+
+      .bubble.user {
+        background: #111827;
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+
+      .bubble.assistant {
+        background: white;
+        color: var(--text-main);
+        border: 1px solid var(--border);
+        border-bottom-left-radius: 4px;
+      }
+
+      .chat-footer {
+        padding: 10px 12px;
+        border-top: 1px solid var(--border);
+        background: #f9fafb;
+      }
+
+      .chat-form {
+        display: flex;
+        gap: 8px;
+      }
+
+      .chat-input {
+        flex: 1;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        font-size: 14px;
+        outline: none;
+      }
+
+      .chat-input:focus {
+        border-color: #111827;
+      }
+
+      .chat-send {
+        padding: 0 20px;
+        border-radius: 999px;
+        border: none;
+        background: #111827;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .chat-send:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      .note {
+        margin-top: 10px;
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: right;
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          padding: 20px 10px 32px;
+        }
+        .title {
+          font-size: 24px;
+        }
+        .chat-card {
+          height: calc(100vh - 200px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="logo">
+        <!-- Optional logo; safe if file is missing -->
+        <img src="/CV-Logo-Big-Medium.png" alt="Cinematic Videographers" />
+      </div>
+
+      <div class="title">Ask Nora for a Quote</div>
+      <div class="subtitle">
+        Our AI assistant can generate instant videography quotes for your clients.
+      </div>
+
+      <div class="chat-card">
+        <div class="chat-header">
+          <div class="chat-avatar">N</div>
+          <div>
+            <div class="chat-title">Nora — Cinematic Videographers</div>
+            <div class="chat-subtitle">Instant quotes & quick questions</div>
+          </div>
+        </div>
+
+        <div id="chat-body" class="chat-body"></div>
+
+        <div class="chat-footer">
+          <form id="chat-form" class="chat-form">
+            <input
+              id="chat-input"
+              class="chat-input"
+              type="text"
+              placeholder="Type your question about a quote…"
+              autocomplete="off"
+            />
+            <button id="chat-send" class="chat-send" type="submit">
+              Send
+            </button>
+          </form>
+          <div class="note">Powered by Nora · Cinematic Videographers</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/nora-chat.js"></script>
+  </body>
+</html>
