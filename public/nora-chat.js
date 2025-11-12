@@ -1,0 +1,1 @@
+// nora-chat.js placeholder
