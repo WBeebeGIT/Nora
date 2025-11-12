@@ -3,159 +3,115 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nora — Instant Quote</title>
+  <title>Ask Nora for a Quote</title>
   <style>
-    /* --- Page layout (light theme) --- */
-    :root{
-      --text:#111;
-      --muted:#555;
-      --panel:#ffffff;
-      --ring:#e8eaef;
-      --shadow: 0 10px 30px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.06);
-      --radius:16px;
-      --maxw:1100px;
+    :root {
+      --text: #111;
+      --muted: #555;
+      --panel: #fff;
+      --shadow: 0 10px 30px rgba(0,0,0,0.1);
+      --radius: 14px;
+      --maxw: 900px;
     }
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:#fff;
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: #fff;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 80px;
     }
-    .wrap{
-      max-width:var(--maxw);
-      margin-inline:auto;
-      padding:32px 20px 56px;
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      color: #111;
     }
-    h1{
-      margin:8px 0 8px;
-      font-size: clamp(28px, 4.2vw, 40px);
-      line-height:1.15;
-      text-align:center;
-      font-weight:800;
-      letter-spacing:-.01em;
-      color:var(--text);
+    p.sub {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 30px;
+      font-size: 1rem;
     }
-    .sub{
-      text-align:center;
-      color:var(--muted);
-      font-size: clamp(14px, 1.8vw, 16px);
-      margin-bottom:24px;
+    .chat-container {
+      width: 100%;
+      max-width: var(--maxw);
+      height: 640px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
     }
-
-    /* --- Chat stage (white card centered) --- */
-    .stage{
-      display:grid;
-      place-items:center;
+    #nora-chat {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
     }
-    .card{
-      width:min(100%, 1000px);
-      height: clamp(520px, 70vh, 640px);
-      background:var(--panel);
-      border:1px solid var(--ring);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      position:relative;
+    /* Hide floating bubble */
+    .nora-bubble, [data-nora-bubble] {
+      display: none !important;
     }
-    /* The Nora chat UI will render inside this container */
-    #nora-chat{
-      position:absolute;
-      inset:0;
-      display:flex;
-      flex-direction:column;
+    /* Hide Nora internal brand bar */
+    #nora-chat .nora-header, 
+    #nora-chat [data-role="header"] {
+      display: none !important;
     }
-
-    /* --- Make sure the floating bubble (if any) is hidden on this page --- */
-    .nora-bubble, [data-nora-bubble]{ display:none !important; }
-
-    /* --- Remove the in-chat header bar (logo + brand) for a clean client view --- */
-    #nora-chat .nora-header,
-    #nora-chat [data-role="header"]{
-      display:none !important;
+    /* Make chat text readable */
+    #nora-chat, #nora-chat * {
+      color: #111 !important;
     }
-
-    /* --- Force dark text / light UI inside the embedded chat panel --- */
-    #nora-chat, #nora-chat *{
-      color:var(--text);
-    }
-    #nora-chat input, #nora-chat textarea, #nora-chat select, #nora-chat button{
-      color:var(--text);
-    }
-
-    /* --- Footer --- */
-    .ft{
-      margin-top:22px;
-      text-align:center;
-      color:#777;
-      font-size:13px;
-    }
-
-    /* Small screens: keep everything centered and readable */
-    @media (max-width:600px){
-      .wrap{ padding:24px 14px 48px; }
-      .card{ height: 72vh; }
+    .footer {
+      margin-top: 25px;
+      color: #777;
+      font-size: 13px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1>Ask Nora for a Quote</h1>
-    <p class="sub">Our AI assistant that generates instant videography quotes for your clients.</p>
+  <img src="CV-Logo-Big%20Medium.png" alt="Cinematic Videographers" style="max-width:220px; margin-bottom:20px;">
+  <h1>Ask Nora for a Quote</h1>
+  <p class="sub">Our AI assistant that generates instant videography quotes for your clients.</p>
 
-    <section class="stage">
-      <div class="card" aria-label="Quote chat">
-        <!-- Nora will mount here, already open -->
-        <div id="nora-chat"
-             data-open="true"
-             data-theme="light"
-             data-hide-header="true"
-             data-date-format="dd/MM/yyyy">
-        </div>
-      </div>
-    </section>
+  <div class="chat-container">
+    <div id="nora-chat" 
+         data-open="true" 
+         data-theme="light" 
+         data-hide-header="true" 
+         data-date-format="dd/MM/yyyy">
+    </div>
+  </div>
 
-    <p class="ft">© Cinematic Videographers · Nora Assistant</p>
-  </main>
+  <div class="footer">© Cinematic Videographers · Nora Assistant</div>
 
-  <!-- Nora client script (served from your Vercel app) -->
-  <!-- If this file lives on the same domain as nora-chat.js, the root path works. -->
+  <!-- Nora Chat Script -->
   <script src="/nora-chat.js"></script>
-
   <script>
-    /*
-      Light, centered, headerless, dd/MM/yyyy:
+    // Enforce dd/mm/yyyy placeholder and prevent second bubble instance
+    window.NORA_OPTIONS = {
+      mount: '#nora-chat',
+      open: true,
+      theme: 'light',
+      hideHeader: true,
+      dateFormat: 'dd/MM/yyyy',
+      bubble: false
+    };
 
-      The attributes on #nora-chat are read by the script.
-      This block is a defensive helper in case the script expects a JS config.
-    */
-    (function initNora(){
-      const el = document.getElementById('nora-chat');
-
-      // Provide a global config if Nora looks for one
-      window.NORA_OPTIONS = {
-        mount: '#nora-chat',
-        open: true,
-        theme: 'light',
-        hideHeader: true,
-        dateFormat: 'dd/MM/yyyy'
-      };
-
-      // As a final fallback, normalize any visible date placeholders to dd/mm/yyyy
-      const applyDatePlaceholder = () => {
-        const inputs = el.querySelectorAll('input[placeholder], textarea[placeholder]');
-        inputs.forEach(i => {
-          const p = (i.getAttribute('placeholder')||'').toLowerCase();
-          if (p.includes('yyyy') && p.includes('mm') && p.includes('dd')) {
-            i.setAttribute('placeholder','dd/mm/yyyy');
-          }
-        });
-      };
-      // Run a few times to catch lazy-rendered fields
-      applyDatePlaceholder();
-      const obs = new MutationObserver(applyDatePlaceholder);
-      obs.observe(el, {childList:true, subtree:true});
-    })();
+    const fixDates = () => {
+      const inputs = document.querySelectorAll('input[placeholder]');
+      inputs.forEach(i => {
+        if (i.placeholder.match(/yyyy|mm|dd/i)) i.placeholder = 'dd/mm/yyyy';
+      });
+    };
+    const obs = new MutationObserver(fixDates);
+    obs.observe(document.body, { childList: true, subtree: true });
+    fixDates();
   </script>
 </body>
 </html>
