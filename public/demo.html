@@ -3,325 +3,290 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ask Nora for a Quote</title>
+  <title>Nora – Quote Demo</title>
+  <link rel="icon" href="/favicon.ico" />
   <style>
     :root {
       --bg: #ffffff;
-      --text: #111827;        /* charcoal */
-      --muted: #6b7280;       /* gray-500 */
-      --ring: #111827;
-      --pill: #111827;
-      --pillText: #fff;
-      --border: #e5e7eb;
+      --text: #111827;       /* charcoal */
+      --muted: #6b7280;      /* gray-500 */
+      --border: #e5e7eb;     /* gray-200 */
       --card: #ffffff;
-      --shadow: 0 10px 25px rgba(17, 24, 39, .08);
-      --radius: 14px;
+      --shadow: 0 10px 25px rgba(0,0,0,.08);
+      --pill-bg: #111827;    /* dark pill */
+      --pill-text: #fff;
+      --pill-bg-active: #374151;
+      --input-bg: #ffffff;
+      --input-border: #d1d5db;
+      --input-focus: #111827;
+      --btn-bg: #111827;
+      --btn-text: #ffffff;
+      --btn-bg-hover: #000000;
     }
-    html, body { height: 100%; background: var(--bg); }
-    body {
-      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
-      color: var(--text); -webkit-font-smoothing: antialiased; line-height: 1.45;
-      display: flex; align-items: flex-start; justify-content: center;
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-    .wrap { width: 100%; max-width: 920px; padding: 32px 16px 64px; }
-    h1 { font-size: 32px; margin: 8px 0 8px; text-align: center; }
-    .sub { text-align: center; color: var(--muted); margin-bottom: 24px; }
+    .wrap {
+      max-width: 900px;
+      margin: 40px auto 48px;
+      padding: 0 16px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    header img.logo {
+      height: 52px;
+      width: auto;
+      object-fit: contain;
+      margin-bottom: 6px;
+    }
+    h1 {
+      margin: 8px 0 6px;
+      font-size: 32px;
+      line-height: 1.1;
+      letter-spacing: .1px;
+      font-weight: 700;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 22px;
+    }
     .card {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      box-shadow: var(--shadow); padding: 22px 22px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 22px;
     }
     .row { margin-bottom: 14px; }
-    .lbl { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
-    .group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .bubble {
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .pills { display:flex; flex-wrap: wrap; gap: 10px; }
     .pill {
-      appearance: none; border: 1px solid var(--border); background: #fff; color: var(--text);
-      border-radius: 999px; padding: 8px 14px; cursor: pointer; font: inherit;
+      background: var(--pill-bg);
+      color: var(--pill-text);
+      border: 1px solid transparent;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      display:inline-flex;
+      align-items:center;
+      cursor:pointer;
+      font-size: 14px;
+      user-select:none;
     }
-    .pill[aria-pressed="true"] { background: var(--pill); color: var(--pillText); border-color: var(--pill); }
-    .text, .date {
-      width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font: inherit;
+    .pill[aria-pressed="true"] {
+      background: var(--pill-bg-active);
     }
-    .text:focus, .date:focus { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3px rgba(17,24,39,.1); }
-    .help { font-size: 12px; color: var(--muted); margin-top: 6px; }
-    .actions { display: flex; gap: 10px; margin-top: 6px; }
-    .btn {
-      appearance: none; border: 1px solid var(--ring); background: var(--ring); color: #fff;
-      border-radius: 10px; padding: 12px 16px; font: 600 14px/1 ui-sans-serif, system-ui;
+    input[type="date"], input[type="text"] {
+      width: 100%;
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      height: 42px;
+      padding: 0 12px;
+      font-size: 16px;
+      outline: none;
+    }
+    input[type="date"]:focus, input[type="text"]:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(17,24,39,.12);
+    }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .actions { margin-top: 12px; }
+    button.primary {
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      height: 40px;
+      padding: 0 16px;
+      font-weight: 600;
       cursor: pointer;
     }
-    .btn[disabled] { opacity: .55; cursor: not-allowed; }
-    .outline { background: #fff; color: var(--ring); }
-    .result { margin-top: 18px; border: 1px solid var(--border); border-radius: 10px; padding: 12px 12px; }
-    .result .line { background: #f3f4f6; border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
-    .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; }
+    button.primary:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+    button.primary:hover:not(:disabled) {
+      background: var(--btn-bg-hover);
+    }
+
+    /* Results pane */
+    .results {
+      margin-top: 18px;
+      border-top: 1px dashed var(--border);
+      padding-top: 12px;
+    }
+    .line {
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display:flex;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .total {
+      font-size: 18px;
+      font-weight: 800;
+      padding: 12px;
+      border-radius: 10px;
+      background: #111827;
+      color: #fff;
+      display:inline-block;
+      min-width: 130px;
+      text-align:center;
+    }
+
+    footer {
+      text-align:center;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 24px 0 10px;
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1>Ask Nora for a Quote</h1>
-    <p class="sub">Our AI assistant can generate instant videography quotes for your clients.</p>
+  <div class="wrap">
+    <header>
+      <!-- Put your logo in /public (e.g., /CV-Logo-Big-Medium.png) and update src below -->
+      <img class="logo" src="/CV-Logo-Big Medium.png" alt="Cinematic Videographers" />
+      <h1>Ask Nora for a Quote</h1>
+      <div class="sub">Our AI assistant can generate instant videography quotes for your clients.</div>
+    </header>
 
-    <section class="card" role="form" aria-labelledby="form-title">
-      <h2 id="form-title" class="lbl" style="margin-bottom:12px;color:var(--text)">
-        Quick Quote • Tell us a few details
-      </h2>
-
-      <!-- Step 1: Event -->
+    <section class="card" id="quoteCard">
       <div class="row">
-        <div class="lbl">What type of event is this?</div>
-        <div class="group" id="eventGroup" role="group" aria-label="Event type">
-          <button class="pill" data-value="Corporate">Corporate</button>
-          <button class="pill" data-value="Wedding">Wedding</button>
-          <button class="pill" data-value="Mitzvah">Mitzvah</button>
-          <button class="pill" data-value="Other">Other</button>
-        </div>
+        <div class="bubble">Hi! I’m Nora. I’ll get you a quick quote in a few taps.</div>
       </div>
 
-      <!-- Step 2: Hours -->
-      <div class="row" id="hoursRow" hidden>
-        <div class="lbl">About how many hours of coverage?</div>
-        <div class="group" id="hoursGroup" role="group" aria-label="Hours">
-          <button class="pill" data-value="4">4</button>
-          <button class="pill" data-value="6">6</button>
-          <button class="pill" data-value="8">8</button>
-          <button class="pill" data-value="10">10</button>
-          <button class="pill" data-value="12">12</button>
-        </div>
-        <div class="help">We’ll enforce your 4-hour minimum automatically.</div>
+      <div class="row">
+        <div class="bubble">What type of event is this? (Corporate, Wedding, Mitzvah, Other)</div>
       </div>
 
-      <!-- Step 3: Crew -->
-      <div class="row" id="crewRow" hidden>
-        <div class="lbl">Crew</div>
-        <div class="group" id="crewGroup" role="group" aria-label="Crew">
-          <button class="pill" data-lead="1" data-second="0">1 Lead</button>
-          <button class="pill" data-lead="1" data-second="1">1 Lead + 1 Second</button>
-          <button class="pill" data-lead="2" data-second="1">2 Leads + 1 Second</button>
-        </div>
+      <div class="row pills" id="eventPills" role="group" aria-label="Event Type">
+        <button class="pill" data-type="Corporate" aria-pressed="false">Corporate</button>
+        <button class="pill" data-type="Wedding" aria-pressed="false">Wedding</button>
+        <button class="pill" data-type="Mitzvah" aria-pressed="false">Mitzvah</button>
+        <button class="pill" data-type="Other" aria-pressed="false">Other</button>
       </div>
 
-      <!-- Step 4: Location / Travel -->
-      <div class="row" id="locRow" hidden>
-        <div class="lbl">Travel</div>
-        <div class="group" id="locGroup" role="group" aria-label="Travel range">
-          <button class="pill" data-value="local">Local (within ~1.5 hr)</button>
-          <button class="pill" data-value="far">Far (over ~1.5 hr)</button>
-        </div>
-        <div class="help">Local adds your standard $100 travel; Far uses your $400 travel rule.</div>
-      </div>
-
-      <!-- Step 5: Add-ons -->
-      <div class="row" id="addonsRow" hidden>
-        <div class="lbl">Optional add-ons</div>
-        <div class="group" id="addonsGroup" role="group" aria-label="Add-ons">
-          <button class="pill" data-key="secondShooter">Second Videographer</button>
-          <button class="pill" data-key="drone">Drone</button>
-          <button class="pill" data-key="livestream">Livestream</button>
-          <button class="pill" data-key="rush48">48-hr Rush Edit</button>
-          <button class="pill" data-key="rush24">24-hr Rush Edit</button>
-        </div>
-      </div>
-
-      <!-- Step 6: Date -->
-      <div class="row" id="dateRow" hidden>
-        <div class="lbl">Event date (format: dd/MM/yyyy)</div>
-        <input id="dateInput" class="text" placeholder="dd/MM/yyyy" inputmode="numeric" autocomplete="off" />
+      <div class="row">
+        <!-- Native calendar picker; we’ll format to dd/MM/yyyy on submit -->
+        <input id="eventDate" type="date" aria-label="Event date" />
+        <div class="hint">Event date (format: dd/MM/yyyy)</div>
       </div>
 
       <div class="actions">
-        <button id="quoteBtn" class="btn" disabled>Get Quote</button>
-        <button id="resetBtn" class="btn outline" type="button">Reset</button>
+        <button id="getQuote" class="primary" disabled>Get Quote</button>
       </div>
 
-      <div id="result" class="result" hidden></div>
+      <div class="results" id="results" hidden></div>
     </section>
 
-    <p class="footer">© Cinematic Videographers · Nora Assistant</p>
-  </main>
+    <footer>© Cinematic Videographers · Nora Assistant</footer>
+  </div>
 
   <script>
-    // ------- State -------
-    const state = {
-      eventType: null,
-      hours: null,
-      crew: { lead: null, second: null },
-      locationType: null,     // 'local' | 'far'
-      addons: {               // booleans; UI toggles these
-        secondShooter: false,
-        drone: false,
-        livestream: false,
-        rush48: false,
-        rush24: false
-      },
-      eventDate: ''
-    };
+    // --- UI state ---
+    let eventType = null;
+    const pills = Array.from(document.querySelectorAll('#eventPills .pill'));
+    const dateEl = document.getElementById('eventDate');
+    const btn = document.getElementById('getQuote');
+    const results = document.getElementById('results');
 
-    // ------- helpers -------
-    const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-    const $  = (s, r = document) => r.querySelector(s);
-    const enable = el => el.removeAttribute('disabled');
-    const disable = el => el.setAttribute('disabled', 'true');
-    const show = el => el.hidden = false;
-    const hide = el => el.hidden = true;
+    pills.forEach(p => {
+      p.addEventListener('click', () => {
+        pills.forEach(x => x.setAttribute('aria-pressed', 'false'));
+        p.setAttribute('aria-pressed', 'true');
+        eventType = p.dataset.type;
+        updateButtonState();
+      });
+    });
 
-    function pressToggle(btn, pressed) {
-      btn.setAttribute('aria-pressed', String(pressed));
-    }
-    function exclusive(group, btn) {
-      $$(".pill", group).forEach(b => pressToggle(b, false));
-      pressToggle(btn, true);
+    dateEl.addEventListener('change', updateButtonState);
+
+    function updateButtonState() {
+      const hasDate = Boolean(dateEl.value);
+      btn.disabled = !(eventType && hasDate);
     }
 
-    // dd/MM/yyyy validation
-    function isValidDMY(str) {
-      const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(str).trim());
-      if (!m) return false;
-      const dd = +m[1], mm = +m[2], yy = +m[3];
-      const d = new Date(yy, mm - 1, dd);
-      return d.getFullYear() === yy && (d.getMonth()+1) === mm && d.getDate() === dd;
+    function formatDDMMYYYY(yyyyDashMmDashDd) {
+      // input from <input type="date"> is yyyy-mm-dd
+      if (!yyyyDashMmDashDd || !yyyyDashMmDashDd.includes('-')) return '';
+      const [y, m, d] = yyyyDashMmDashDd.split('-');
+      return `${d}/${m}/${y}`;
     }
 
-    function canQuote() {
-      return !!(state.eventType
-        && state.hours
-        && Number.isInteger(state.crew.lead)
-        && Number.isInteger(state.crew.second)
-        && state.locationType
-        && isValidDMY(state.eventDate));
+    function money(n) {
+      return n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
     }
 
-    function updateQuoteButton() {
-      if (canQuote()) enable($('#quoteBtn'));
-      else disable($('#quoteBtn'));
-    }
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
 
-    // ------- wiring -------
-    // Step 1
-    $("#eventGroup").addEventListener("click", (e) => {
-      const b = e.target.closest(".pill");
-      if (!b) return;
-      exclusive($("#eventGroup"), b);
-      state.eventType = b.dataset.value;
-      show($("#hoursRow"));
-      // suggest presets for hours & crew when event chosen (but still require user click)
-      if (state.eventType === "Wedding") {
-        // suggest 10h, 1 lead + 1 second
-      } else if (state.eventType === "Mitzvah") {
-        // suggest 8h, 1 lead + 1 second
-      } else {
-        // corporate / other typical 4h
-      }
-      updateQuoteButton();
-    });
+      // Build request payload. Add any future fields here:
+      const payload = {
+        eventType,                 // 'Corporate' | 'Wedding' | 'Mitzvah' | 'Other'
+        eventDate: formatDDMMYYYY(dateEl.value),
+        hours: 4,                  // default shown; your API enforces 4-hour minimum anyway
+        crew: { lead: 1, second: 0 },
+        locationType: 'local',
+        addons: {
+          secondShooter: false,
+          drone: false,
+          livestream: false,
+          rush48: false,
+          rush24: false
+        }
+      };
 
-    // Step 2
-    $("#hoursGroup").addEventListener("click", (e) => {
-      const b = e.target.closest(".pill");
-      if (!b) return;
-      exclusive($("#hoursGroup"), b);
-      state.hours = parseInt(b.dataset.value, 10) || null;
-      show($("#crewRow"));
-      updateQuoteButton();
-    });
-
-    // Step 3
-    $("#crewGroup").addEventListener("click", (e) => {
-      const b = e.target.closest(".pill");
-      if (!b) return;
-      exclusive($("#crewGroup"), b);
-      state.crew.lead   = parseInt(b.dataset.lead, 10);
-      state.crew.second = parseInt(b.dataset.second, 10);
-      show($("#locRow"));
-      updateQuoteButton();
-    });
-
-    // Step 4
-    $("#locGroup").addEventListener("click", (e) => {
-      const b = e.target.closest(".pill");
-      if (!b) return;
-      exclusive($("#locGroup"), b);
-      state.locationType = b.dataset.value; // local | far
-      show($("#addonsRow"));
-      show($("#dateRow"));
-      updateQuoteButton();
-    });
-
-    // Step 5 (toggles)
-    $("#addonsGroup").addEventListener("click", (e) => {
-      const b = e.target.closest(".pill");
-      if (!b) return;
-      const key = b.dataset.key;
-      const now = b.getAttribute('aria-pressed') === 'true';
-      pressToggle(b, !now);
-      state.addons[key] = !now;
-      updateQuoteButton();
-    });
-
-    // Step 6 (date)
-    $("#dateInput").addEventListener("input", (e) => {
-      state.eventDate = e.target.value.trim();
-      updateQuoteButton();
-    });
-
-    // Reset
-    $("#resetBtn").addEventListener("click", () => {
-      // clear state
-      state.eventType = null;
-      state.hours = null;
-      state.crew = { lead: null, second: null };
-      state.locationType = null;
-      state.addons = { secondShooter:false, drone:false, livestream:false, rush48:false, rush24:false };
-      state.eventDate = '';
-      // clear UI
-      $$(".pill").forEach(b => pressToggle(b, false));
-      $("#dateInput").value = '';
-      // hide later rows
-      show($("#hoursRow")); hide($("#crewRow")); hide($("#locRow")); hide($("#addonsRow")); hide($("#dateRow"));
-      hide($("#hoursRow")); // start hidden again
-      $('#result').hidden = true;
-      updateQuoteButton();
-    });
-
-    // Quote
-    $("#quoteBtn").addEventListener("click", async () => {
-      if (!canQuote()) return;
-      disable($("#quoteBtn"));
-      const result = $("#result");
-      result.hidden = false;
-      result.innerHTML = `<div class="line">Great — calculating your quote…</div>`;
+      // UI feedback
+      results.hidden = false;
+      results.innerHTML = `
+        <div class="line"><span>Great — calculating your quote…</span></div>
+      `;
 
       try {
-        const payload = {
-          eventType: state.eventType,
-          hours: state.hours,
-          crew: state.crew,
-          locationType: state.locationType,   // local | far
-          addons: state.addons,
-          eventDate: state.eventDate          // dd/MM/yyyy
-        };
-
         const r = await fetch('/api/quote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
+
         const data = await r.json();
 
-        if (!r.ok) throw new Error(data?.error || 'Failed to get quote');
-
-        const lines = [
-          `<div class="line"><strong>Total Quote:</strong> $${Number(data.total).toLocaleString()}</div>`
-        ];
-        if (Array.isArray(data.breakdown)) {
-          data.breakdown.forEach(item => {
-            lines.push(`<div class="line">${item.label}: $${Number(item.amount).toLocaleString()}</div>`);
-          });
+        if (!r.ok || typeof data.total !== 'number') {
+          results.innerHTML = `
+            <div class="line"><span>Hmm — I couldn’t complete the quote. ${data?.error ? '('+data.error+')' : ''}</span></div>
+          `;
+          btn.disabled = false;
+          return;
         }
-        result.innerHTML = lines.join('');
+
+        // Render breakdown + total
+        let html = '';
+        (data.breakdown || []).forEach(item => {
+          html += `<div class="line"><span>${item.label}</span><span>${money(item.amount || 0)}</span></div>`;
+        });
+        html += `<div class="line" style="justify-content:flex-end"><span class="total">${money(data.total)}</span></div>`;
+        results.innerHTML = html;
       } catch (err) {
-        result.innerHTML = `<div class="line">Error: ${err.message}</div>`;
+        results.innerHTML = `<div class="line"><span>Network error. Please try again.</span></div>`;
       } finally {
-        enable($("#quoteBtn"));
+        btn.disabled = false;
       }
     });
   </script>
