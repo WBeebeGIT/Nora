@@ -1,96 +1,192 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cinematic Videographers — Ask Nora for a Quote</title>
+  <title>Ask Nora for a Quote • Cinematic Videographers</title>
+  <meta name="color-scheme" content="dark light" />
+
   <style>
     :root{
-      --bg:#0b1016;--text:#eaf2f8;--muted:#a6b8c9;--brand:#00d4ff;--line:#122133;
-      --card:#0f1724;
+      --bg: #0b1217;
+      --bg-grad: radial-gradient(1200px 600px at 50% -10%, #12202b 0%, #0b1217 50%, #0b1217 100%);
+      --card: #111a22;
+      --ring: rgba(255,255,255,.08);
+      --text: #e9f2f8;
+      --muted: #9fb3c1;
+      --brand: #0ea5e9; /* accent for focus rings */
+      --radius: 18px;
+      --shadow: 0 10px 35px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.02);
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
+
+    /* Page shell */
+    html, body {height: 100%;}
     body{
-      margin:0;color:var(--text);
-      background:
-        radial-gradient(700px 340px at 80% -10%, rgba(0,212,255,.18), transparent 60%),
-        radial-gradient(900px 420px at 8% -20%, rgba(124,201,255,.16), transparent 60%),
-        linear-gradient(#0a0f14,#070b10);
-      font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      margin:0;
+      color:var(--text);
+      background: var(--bg);
+      background-image: var(--bg-grad);
+      font: 400 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Inter, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-    .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 60px}
-    header{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:16px}
-    header img{height:54px;width:auto;object-fit:contain}
-    h1{margin:8px 0 2px;font-size:28px;font-weight:800;letter-spacing:.2px}
-    p.sub{margin:0;color:var(--muted)}
-    /* Centered chat container (modal-style) */
-    #nora-chat{
-      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
-      width:min(760px,92vw);height:min(620px,86vh);
-      z-index:1000;
-      border:1px solid var(--line); border-radius:18px; overflow:hidden;
-      background:var(--card);
-      box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset;
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: clamp(16px, 2vw, 28px);
     }
-    /* Hide any default bubble the script might render */
-    .nora-bubble, [data-nora-bubble]{display:none!important}
-    @media (max-width:640px){
-      h1{font-size:22px}
-      header img{height:44px}
+    header{
+      text-align:center;
+      margin: 18px 0 8px;
+    }
+    .logo{
+      height: 44px;
+      width:auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 12px rgba(0,0,0,.35));
+    }
+    h1{
+      margin: 18px 0 6px;
+      font-size: clamp(28px, 2.8vw, 36px);
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing:.2px;
+      text-align:center;
+    }
+    .sub{
+      text-align:center;
+      color: var(--muted);
+      font-size: clamp(14px, 1.7vw, 16px);
+      margin-bottom: 18px;
+    }
+
+    /* Card that holds the open chat */
+    .card{
+      position: relative;
+      margin: 22px auto 48px;
+      width: min(100%, 980px);
+      /* keep the exact “placeholder” look/size but responsive */
+      height: clamp(420px, 70vh, 640px);
+      background: linear-gradient(180deg, #0f1a22, #0d171f);
+      border: 1px solid var(--ring);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* Where we mount the live chat window */
+    #nora-host{
+      position:absolute; inset:14px;
+      border-radius: calc(var(--radius) - 10px);
+      background: #0d171f;
+    }
+
+    /* --- Embed hardening: keep chat open, centered, and full-size --- */
+    /* Hide any floating bubble UI the embed might add */
+    .nora-bubble,[data-nora-bubble],[aria-label="Open chat"],.chat-bubble{display:none!important;}
+
+    /* Force the chat window to fill the host area */
+    #nora-host > div,
+    #nora-host .nora-panel,
+    #nora-host .nora-window,
+    #nora-host [data-nora-panel]{
+      position:absolute !important;
+      inset:0 !important;
+      width:100% !important;
+      height:100% !important;
+      max-width:none !important;
+      max-height:none !important;
+      transform:none !important;
+      left:0 !important; top:0 !important; right:0 !important; bottom:0 !important;
+      border-radius: inherit !important;
+    }
+
+    /* Focus rings for any inputs inside chat */
+    #nora-host input:focus, #nora-host textarea:focus, #nora-host button:focus{
+      outline: 2px solid var(--brand) !important;
+      outline-offset: 2px !important;
+    }
+
+    footer{
+      color:var(--muted);
+      text-align:center;
+      font-size: 13px;
+      margin: 8px 0 32px;
+    }
+
+    @media (max-width: 520px){
+      .card{height: min(72vh, 560px);}
+      header{margin-top:10px;}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <!-- Your logo -->
-      <img src="/CV-Logo-Big%20Medium.png" alt="Cinematic Videographers" />
-      <h1>Ask Nora for a Quote</h1>
-      <p class="sub">Our AI assistant that generates instant videography quotes for your clients.</p>
+      <!-- Upload your logo to: /public/cv-logo.png -->
+      <img class="logo" src="/cv-logo.png" alt="Cinematic Videographers" onerror="this.style.display='none'">
     </header>
+
+    <h1>Ask Nora for a Quote</h1>
+    <p class="sub">Our AI assistant that generates instant videography quotes for your clients.</p>
+
+    <!-- Chat placeholder card (the chat will fill this area) -->
+    <section class="card" aria-label="Nora chat container">
+      <div id="nora-host"></div>
+    </section>
+
+    <footer>© Cinematic Videographers · Nora Assistant</footer>
   </div>
 
-  <!-- Nora Chat: centered and open by default -->
-  <div id="nora-chat"
-       data-endpoint="/api/nora"
-       data-title="Hi — I’m Nora"
-       data-subtitle="Tell me about your event and I’ll price it out."
-       data-primary="#00d4ff"
-       data-open="true"
-       data-mode="centered"
-       data-date-format="dd/mm/yyyy">
-  </div>
+  <!-- Nora configuration: keep keys server-side; front-end only passes safe flags -->
+  <script>
+    /* The embed script reads this but never exposes secrets. */
+    window.NORA_CONFIG = {
+      /* Force the chat to open immediately (no bubble) */
+      autoOpen: true,
+      /* Tell Nora to format all dates as dd/mm/yyyy */
+      dateFormat: "dd/MM/yyyy",
+      /* Optional: a compact header title Nora can use */
+      title: "Nora — Cinematic Videographers",
+      /* Mark that we’re embedding inside a page region, not bottom-right bubble */
+      embedMode: "host"
+    };
+  </script>
 
-  <!-- Nora Chat runtime -->
+  <!-- Load your Nora chat bundle from /public (already in your repo) -->
   <script src="/nora-chat.js" defer></script>
 
-  <!-- Safety net: if the runtime exposes a bubble by default, force-open & center it. -->
   <script>
-    (function waitForNora(){
-      // Try a few strategies so we don't need to touch your runtime
-      const openNow = () => {
-        // If the runtime exposes a global open() or instance, use it
-        try {
-          if (window.NoraChat && typeof window.NoraChat.open === 'function') {
-            window.NoraChat.open({ centered: true, dateFormat: 'dd/mm/yyyy' });
-            return true;
-          }
-          if (window.noraChat && typeof window.noraChat.open === 'function') {
-            window.noraChat.open({ centered: true, dateFormat: 'dd/mm/yyyy' });
-            return true;
-          }
-          // Fallback: simulate a click on any launch button the widget injects
-          const launch = document.querySelector('[data-nora-launch],button[title*="chat"],button[aria-label*="chat"]');
-          if (launch) { launch.click(); return true; }
-        } catch(e){}
-        return false;
-      };
-      let tries = 0;
-      const iv = setInterval(() => {
-        tries++;
-        if (openNow() || tries > 40) clearInterval(iv);
-      }, 150);
+    // After the chat bootstraps, move the live window into #nora-host and keep it there.
+    (function mountIntoHost(){
+      const host = document.getElementById('nora-host');
+
+      // Helper: try to find the chat panel Nora renders
+      function findPanel(){
+        return document.querySelector('[data-nora-panel], .nora-panel, .nora-window, [data-chat-panel]');
+      }
+
+      // Try moving once right away
+      function tryMount(){
+        const panel = findPanel();
+        if(panel && !host.contains(panel)){
+          host.appendChild(panel);
+          // Ensure it fills the host
+          panel.style.position = 'absolute';
+          panel.style.inset = '0';
+          return true;
+        }
+        return !!panel;
+      }
+
+      // Keep trying until it exists, then disconnect
+      const o = new MutationObserver(() => {
+        if (tryMount()) o.disconnect();
+      });
+      o.observe(document.documentElement, {childList:true, subtree:true});
+
+      // One last safety: re-mount on resize if anything drifts
+      addEventListener('resize', () => { const p = findPanel(); if(p && p.parentElement !== host){ host.appendChild(p); }}, {passive:true});
     })();
   </script>
 </body>
