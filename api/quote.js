@@ -1,46 +1,87 @@
+// /api/quote.js
 export default async function handler(req, res) {
   try {
-    const payload = req.body || {};
-    const POLICIES = {
-      fourHourMinimum: 4,
-      studioAsLead: true,
-      leadRatePerHour: 150,
-      secondRatePerHour: 100,
-      usbRawFootageDrive: 100,
-      localTravel: 100,
-      extendedTravel: 400,
-      localRegex: /(new york|bronx|brooklyn|queens|stamford|jersey city)/i
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const {
+      eventDate = '',
+      location = '',
+      hours = 4,
+      addons = [],          // ['Drone','Livestream','Rush48','Rush24','USB']
+      post = []             // ['Social','StudioEdit','ClientDirected']
+    } = req.body || {};
+
+    // ---- Pricing rules (client-facing UI removed; all math here) ----
+    const HOURLY = 400;                   // Videography coverage
+    const MIN_HOURS = 4;                  // 4-hour minimum enforced
+    const DRONE = 700;                    // flat
+    const LIVESTREAM = 700;               // flat
+    const RUSH48 = 200;                   // flat
+    const RUSH24 = 400;                   // flat
+    const USB = 100;                      // flat
+
+    // Post-production (you can tune these any time)
+    const POST_PRICES = {
+      Social: 100,            // Social Media Edit
+      StudioEdit: 600,        // “as-is” studio edit, no revisions
+      ClientDirected: 600     // with two rounds of revisions (adjust later if needed)
     };
-    const ADDONS = { highlights: 600, livestream: 650, drone: 650 };
-    function travelFor(city){ return POLICIES.localRegex.test(city||'') ? POLICIES.localTravel : POLICIES.extendedTravel; }
-    const hours = Math.max(Number(payload.hours || 0), POLICIES.fourHourMinimum);
-    let leads = 0, seconds = 0;
-    const c = String(payload.coverage || '').toLowerCase();
-    if (c.includes('2 lead')) leads = 2;
-    else if (c.includes('lead + second')) { leads = 1; seconds = 1; }
-    else if (c.includes('b-roll')) { leads = 1; }
-    else { leads = 1; }
-    const clientLeadsCost = leads * POLICIES.leadRatePerHour * hours;
-    const clientSecondsCost = seconds * POLICIES.secondRatePerHour * hours;
-    const studioLeadCost = POLICIES.studioAsLead ? POLICIES.leadRatePerHour * hours : 0;
-    const usbCost = POLICIES.usbRawFootageDrive;
-    const travelCost = travelFor(payload.city);
-    const selected = (payload.deliverables || []).map(d => String(d).toLowerCase());
-    let addOnCost = 0;
-    if (selected.some(s => s.includes('highlight'))) addOnCost += ADDONS.highlights;
-    if (selected.some(s => s.includes('live'))) addOnCost += ADDONS.livestream;
-    if (selected.some(s => s.includes('drone'))) addOnCost += ADDONS.drone;
-    const total = clientLeadsCost + clientSecondsCost + studioLeadCost + usbCost + travelCost + addOnCost;
-    res.status(200).json({
-      client_view: {
-        event_date: payload.event_date || '',
-        location_city: payload.city || '',
-        summary: `${payload.coverage || 'Coverage'} (${hours} hours)` + (addOnCost ? ' + add-ons' : '') + ' + Raw Footage',
-        total,
-        notes: ['All coverage, selected add-ons, travel, and raw-footage drive included.']
+
+    // --- 4-hour minimum ---
+    const billableHours = Math.max(Number(hours || 0), MIN_HOURS);
+
+    // --- Travel (simple heuristic, change later to distance API) ---
+    // Treat “local” NYC metro ZIPs as in-radius => $0 travel.
+    // Otherwise add $400 flat.
+    const zipMatch = String(location).match(/\b(\d{5})\b/);
+    const zip = zipMatch ? zipMatch[1] : null;
+
+    // NYC-ish: 100xx–104xx (Manhattan/Bronx/Staten Is.), 110–114 (Queens/LI edge)
+    const isLocalZip = zip
+      ? (/^(100|101|102|103|104|110|111|112|113|114)/.test(zip))
+      : true; // if no zip typed, assume local rather than scaring the user
+
+    const travelFee = isLocalZip ? 0 : 400;
+
+    // --- Build line items ---
+    const lineItems = [];
+
+    lineItems.push({
+      label: 'Videography Coverage',
+      qty: billableHours,
+      amount: billableHours * HOURLY
+    });
+
+    if (addons.includes('Drone'))      lineItems.push({ label: 'Drone', amount: DRONE });
+    if (addons.includes('Livestream')) lineItems.push({ label: 'Livestream', amount: LIVESTREAM });
+    if (addons.includes('Rush48'))     lineItems.push({ label: 'Rush 48 hr', amount: RUSH48 });
+    if (addons.includes('Rush24'))     lineItems.push({ label: 'Rush 24 hr', amount: RUSH24 });
+    if (addons.includes('USB'))        lineItems.push({ label: 'Raw Footage USB Drive', amount: USB });
+
+    // Post
+    for (const p of post) {
+      if (POST_PRICES[p] != null) {
+        const labelMap = {
+          Social: 'Social Media Edit',
+          StudioEdit: 'Studio Edit (as-is)',
+          ClientDirected: 'Client-Directed Edit (2 rounds)'
+        };
+        lineItems.push({ label: labelMap[p] || p, amount: POST_PRICES[p] });
       }
+    }
+
+    if (travelFee) lineItems.push({ label: 'Travel (> 1.5 hr est.)', amount: travelFee });
+
+    const total = lineItems.reduce((sum, li) => sum + Number(li.amount || 0), 0);
+
+    return res.status(200).json({
+      inputs: { eventDate, location, hours: billableHours, addons, post },
+      total,
+      lineItems
     });
   } catch (err) {
-    res.status(500).json({ error: 'Quote generation failed' });
+    return res.status(500).json({ error: err.message || 'Quote error' });
   }
 }
