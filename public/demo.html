@@ -1,13 +1,97 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nora Demo</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cinematic Videographers — Ask Nora for a Quote</title>
+  <style>
+    :root{
+      --bg:#0b1016;--text:#eaf2f8;--muted:#a6b8c9;--brand:#00d4ff;--line:#122133;
+      --card:#0f1724;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;color:var(--text);
+      background:
+        radial-gradient(700px 340px at 80% -10%, rgba(0,212,255,.18), transparent 60%),
+        radial-gradient(900px 420px at 8% -20%, rgba(124,201,255,.16), transparent 60%),
+        linear-gradient(#0a0f14,#070b10);
+      font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 60px}
+    header{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:16px}
+    header img{height:54px;width:auto;object-fit:contain}
+    h1{margin:8px 0 2px;font-size:28px;font-weight:800;letter-spacing:.2px}
+    p.sub{margin:0;color:var(--muted)}
+    /* Centered chat container (modal-style) */
+    #nora-chat{
+      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+      width:min(760px,92vw);height:min(620px,86vh);
+      z-index:1000;
+      border:1px solid var(--line); border-radius:18px; overflow:hidden;
+      background:var(--card);
+      box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset;
+    }
+    /* Hide any default bubble the script might render */
+    .nora-bubble, [data-nora-bubble]{display:none!important}
+    @media (max-width:640px){
+      h1{font-size:22px}
+      header img{height:44px}
+    }
+  </style>
 </head>
 <body>
-  <h2 style="font-family:system-ui;margin:20px">Nora Demo</h2>
-  <div id="nora-chat"></div>
-  <script src="/nora-chat.js"></script>
+  <div class="wrap">
+    <header>
+      <!-- Your logo -->
+      <img src="/CV-Logo-Big%20Medium.png" alt="Cinematic Videographers" />
+      <h1>Ask Nora for a Quote</h1>
+      <p class="sub">Our AI assistant that generates instant videography quotes for your clients.</p>
+    </header>
+  </div>
+
+  <!-- Nora Chat: centered and open by default -->
+  <div id="nora-chat"
+       data-endpoint="/api/nora"
+       data-title="Hi — I’m Nora"
+       data-subtitle="Tell me about your event and I’ll price it out."
+       data-primary="#00d4ff"
+       data-open="true"
+       data-mode="centered"
+       data-date-format="dd/mm/yyyy">
+  </div>
+
+  <!-- Nora Chat runtime -->
+  <script src="/nora-chat.js" defer></script>
+
+  <!-- Safety net: if the runtime exposes a bubble by default, force-open & center it. -->
+  <script>
+    (function waitForNora(){
+      // Try a few strategies so we don't need to touch your runtime
+      const openNow = () => {
+        // If the runtime exposes a global open() or instance, use it
+        try {
+          if (window.NoraChat && typeof window.NoraChat.open === 'function') {
+            window.NoraChat.open({ centered: true, dateFormat: 'dd/mm/yyyy' });
+            return true;
+          }
+          if (window.noraChat && typeof window.noraChat.open === 'function') {
+            window.noraChat.open({ centered: true, dateFormat: 'dd/mm/yyyy' });
+            return true;
+          }
+          // Fallback: simulate a click on any launch button the widget injects
+          const launch = document.querySelector('[data-nora-launch],button[title*="chat"],button[aria-label*="chat"]');
+          if (launch) { launch.click(); return true; }
+        } catch(e){}
+        return false;
+      };
+      let tries = 0;
+      const iv = setInterval(() => {
+        tries++;
+        if (openNow() || tries > 40) clearInterval(iv);
+      }, 150);
+    })();
+  </script>
 </body>
 </html>
