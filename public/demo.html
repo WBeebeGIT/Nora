@@ -156,38 +156,41 @@
   <!-- Load your Nora chat bundle from /public (already in your repo) -->
   <script src="/nora-chat.js" defer></script>
 
-  <script>
-    // After the chat bootstraps, move the live window into #nora-host and keep it there.
-    (function mountIntoHost(){
-      const host = document.getElementById('nora-host');
+<script>
+  (function mountIntoHost(){
+    const host = document.getElementById('nora-host');
 
-      // Helper: try to find the chat panel Nora renders
-      function findPanel(){
-        return document.querySelector('[data-nora-panel], .nora-panel, .nora-window, [data-chat-panel]');
+    // Function to locate the chat window Nora inserts
+    function findPanel(){
+      return document.querySelector('.nora-panel, .nora-window, [data-nora-panel]');
+    }
+
+    // Re-mount chat into the host div once it appears
+    const observer = new MutationObserver(() => {
+      const panel = findPanel();
+      if (panel && !host.contains(panel)) {
+        host.appendChild(panel);
+        Object.assign(panel.style, {
+          position: 'absolute',
+          inset: '0',
+          width: '100%',
+          height: '100%',
+          borderRadius: 'inherit',
+          transform: 'none'
+        });
       }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
 
-      // Try moving once right away
-      function tryMount(){
-        const panel = findPanel();
-        if(panel && !host.contains(panel)){
-          host.appendChild(panel);
-          // Ensure it fills the host
-          panel.style.position = 'absolute';
-          panel.style.inset = '0';
-          return true;
-        }
-        return !!panel;
+    // Force chat open on load
+    window.addEventListener('load', () => {
+      if (window.NoraChat && typeof NoraChat.open === 'function') {
+        NoraChat.open({ dateFormat: 'dd/MM/yyyy' });
+      } else if (window.noraChat && typeof noraChat.open === 'function') {
+        noraChat.open({ dateFormat: 'dd/MM/yyyy' });
       }
-
-      // Keep trying until it exists, then disconnect
-      const o = new MutationObserver(() => {
-        if (tryMount()) o.disconnect();
-      });
-      o.observe(document.documentElement, {childList:true, subtree:true});
-
-      // One last safety: re-mount on resize if anything drifts
-      addEventListener('resize', () => { const p = findPanel(); if(p && p.parentElement !== host){ host.appendChild(p); }}, {passive:true});
-    })();
-  </script>
+    });
+  })();
+</script>
 </body>
 </html>
