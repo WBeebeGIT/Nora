@@ -4,114 +4,106 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ask Nora for a Quote</title>
+
   <style>
-    :root {
-      --text: #111;
-      --muted: #555;
-      --panel: #fff;
-      --shadow: 0 10px 30px rgba(0,0,0,0.1);
-      --radius: 14px;
-      --maxw: 900px;
+    :root{
+      --text:#111;
+      --muted:#666;
+      --panel:#fff;
+      --shadow:0 12px 30px rgba(0,0,0,.10);
+      --radius:16px;
+      --maxw:980px;
+      --height:640px;
     }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: #fff;
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px 80px;
+    html,body{background:#fff;color:var(--text);margin:0}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      display:flex;flex-direction:column;align-items:center;
+      padding:40px 20px 80px;
     }
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 8px;
-      color: #111;
+
+    /* header */
+    .logo{max-width:220px;margin:0 auto 18px;display:block}
+    h1{margin:0 0 8px;font-size:2rem;line-height:1.2;font-weight:800;text-align:center}
+    .sub{margin:0 0 28px;text-align:center;color:var(--muted)}
+
+    /* card that holds the chat */
+    .chat-card{
+      width:100%;max-width:var(--maxw);
+      height:var(--height);
+      background:var(--panel);border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      position:relative;overflow:hidden;
     }
-    p.sub {
-      text-align: center;
-      color: var(--muted);
-      margin-bottom: 30px;
-      font-size: 1rem;
+
+    /* Nora mount root fills the card */
+    #nora-chat{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff}
+
+    /* Hide any floating bubble/injected fixed widget */
+    .nora-bubble,[data-nora-bubble],[class*="bubble"],
+    div[style*="position: fixed"][style*="bottom"][style*="right"]{
+      display:none !important;
     }
-    .chat-container {
-      width: 100%;
-      max-width: var(--maxw);
-      height: 640px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius);
-      overflow: hidden;
-      position: relative;
+
+    /* Hide Nora brand/header bar inside the widget if present */
+    #nora-chat .nora-header,
+    #nora-chat [data-role="header"]{
+      display:none !important;
     }
-    #nora-chat {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      background: #fff;
-    }
-    /* Hide floating bubble */
-    .nora-bubble, [data-nora-bubble] {
-      display: none !important;
-    }
-    /* Hide Nora internal brand bar */
-    #nora-chat .nora-header, 
-    #nora-chat [data-role="header"] {
-      display: none !important;
-    }
-    /* Make chat text readable */
-    #nora-chat, #nora-chat * {
-      color: #111 !important;
-    }
-    .footer {
-      margin-top: 25px;
-      color: #777;
-      font-size: 13px;
-      text-align: center;
-    }
+
+    /* Force readable dark text in the UI */
+    #nora-chat, #nora-chat *{color:#111 !important}
+
+    /* footer */
+    .footer{margin-top:22px;color:#777;font-size:13px;text-align:center}
   </style>
+
+  <!-- IMPORTANT: set options BEFORE loading nora-chat.js -->
+  <script>
+    window.NORA_OPTIONS = {
+      mount: '#nora-chat',   // embed into our card
+      bubble: false,         // disable floating bubble
+      open: true,            // start open
+      theme: 'light',        // light / white UI
+      hideHeader: true,      // remove internal brand bar
+      dateFormat: 'dd/MM/yyyy'
+    };
+  </script>
 </head>
 <body>
-  <img src="CV-Logo-Big%20Medium.png" alt="Cinematic Videographers" style="max-width:220px; margin-bottom:20px;">
+  <!-- Your logo — keep this file at /public/CV-Logo-Big Medium.png -->
+  <img class="logo" src="CV-Logo-Big%20Medium.png" alt="Cinematic Videographers">
+
   <h1>Ask Nora for a Quote</h1>
   <p class="sub">Our AI assistant that generates instant videography quotes for your clients.</p>
 
-  <div class="chat-container">
-    <div id="nora-chat" 
-         data-open="true" 
-         data-theme="light" 
-         data-hide-header="true" 
-         data-date-format="dd/MM/yyyy">
-    </div>
+  <div class="chat-card">
+    <div id="nora-chat"></div>
   </div>
 
   <div class="footer">© Cinematic Videographers · Nora Assistant</div>
 
-  <!-- Nora Chat Script -->
+  <!-- Nora widget script (will read NORA_OPTIONS and embed) -->
   <script src="/nora-chat.js"></script>
-  <script>
-    // Enforce dd/mm/yyyy placeholder and prevent second bubble instance
-    window.NORA_OPTIONS = {
-      mount: '#nora-chat',
-      open: true,
-      theme: 'light',
-      hideHeader: true,
-      dateFormat: 'dd/MM/yyyy',
-      bubble: false
-    };
 
-    const fixDates = () => {
-      const inputs = document.querySelectorAll('input[placeholder]');
-      inputs.forEach(i => {
-        if (i.placeholder.match(/yyyy|mm|dd/i)) i.placeholder = 'dd/mm/yyyy';
+  <script>
+    // Safety net: if the script still injects a bubble, hide it;
+    // and keep the date placeholder in dd/mm/yyyy.
+    const hideBubble = () => {
+      document.querySelectorAll(
+        '.nora-bubble,[data-nora-bubble],[class*="bubble"],div[style*="position: fixed"][style*="bottom"][style*="right"]'
+      ).forEach(n => n.style.display = 'none');
+    };
+    const enforceDatePlaceholder = () => {
+      document.querySelectorAll('input[placeholder]').forEach(i=>{
+        if(/y.*m.*d|Y.*M.*D|yyyy|mm|dd/i.test(i.placeholder)){
+          i.placeholder = 'dd/mm/yyyy';
+        }
       });
     };
-    const obs = new MutationObserver(fixDates);
-    obs.observe(document.body, { childList: true, subtree: true });
-    fixDates();
+    const mo = new MutationObserver(() => { hideBubble(); enforceDatePlaceholder(); });
+    mo.observe(document.body, { childList:true, subtree:true });
+    hideBubble(); enforceDatePlaceholder();
   </script>
 </body>
 </html>
