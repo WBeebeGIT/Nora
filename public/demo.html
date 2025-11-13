@@ -18,69 +18,66 @@
       color: #111827;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
       min-height: 100vh;
     }
 
     .page {
       width: 100%;
-      max-width: 960px;
-      margin: 32px auto;
-      padding: 0 16px 40px;
+      max-width: 480px;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
 
     .logo {
       display: block;
-      margin: 0 auto 8px;
-      max-width: 260px;
+      margin: 0 auto 4px;
+      max-width: 180px;
       height: auto;
     }
 
-    h1 {
+    .assistant-label {
+      font-size: 13px;
+      color: #6b7280;
       text-align: center;
-      margin: 4px 0 4px;
-      font-size: 32px;
-    }
-
-    .subtitle {
-      text-align: center;
-      margin-bottom: 24px;
-      color: #4b5563;
-      font-size: 14px;
     }
 
     .chat-shell {
+      width: 100%;
       background: #ffffff;
       border-radius: 18px;
       box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
-      padding: 16px 16px 12px;
+      padding: 14px 14px 10px;
       display: flex;
       flex-direction: column;
-      min-height: 420px;
+      min-height: 380px;
       max-height: 640px;
     }
 
     .chat-header {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       padding: 8px 10px;
       border-radius: 10px;
       background: #e5f0ff;
       color: #111827;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .chat-window {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 4px 8px 0;
-      margin-bottom: 12px;
+      padding: 6px 4px 6px 0;
+      margin-bottom: 10px;
     }
 
     .message {
       max-width: 80%;
-      margin: 6px 0;
-      padding: 10px 12px;
+      margin: 5px 0;
+      padding: 9px 11px;
       border-radius: 14px;
       font-size: 14px;
       line-height: 1.4;
@@ -106,7 +103,7 @@
       gap: 8px;
       align-items: center;
       border-top: 1px solid #e5e7eb;
-      padding-top: 10px;
+      padding-top: 8px;
     }
 
     .chat-input {
@@ -126,7 +123,7 @@
     }
 
     .send-button {
-      padding: 9px 18px;
+      padding: 9px 16px;
       border-radius: 999px;
       border: none;
       font-size: 14px;
@@ -135,6 +132,7 @@
       background: #111827;
       color: white;
       transition: background 0.15s ease, transform 0.05s ease;
+      white-space: nowrap;
     }
 
     .send-button:disabled {
@@ -149,22 +147,19 @@
 
     footer {
       text-align: center;
-      margin-top: 16px;
+      margin-top: 8px;
       font-size: 11px;
       color: #6b7280;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 480px) {
       .page {
-        margin-top: 20px;
-      }
-
-      h1 {
-        font-size: 24px;
+        max-width: 100%;
+        padding: 16px 10px;
       }
 
       .chat-shell {
-        min-height: 380px;
+        min-height: 360px;
       }
     }
   </style>
@@ -177,25 +172,19 @@
       alt="Cinematic Videographers"
       class="logo"
     />
-
-    <h1>Ask Nora for a Quote</h1>
-    <p class="subtitle">
-      Our AI assistant can generate instant videography quotes for your clients.
-    </p>
+    <div class="assistant-label">Nora · Instant Quote Assistant</div>
 
     <section class="chat-shell" id="nora-chat">
       <div class="chat-header">
-        Hi! I’m Nora. I can help you with instant videography quotes. Tell me
-        about the event — date, location, hours, and any add-ons you’re
-        considering.
+        Hi, I’m Nora. Paste a client email or tell me about the event — date, location,
+        hours, and any add-ons — and I’ll build a clean videography quote for you.
       </div>
 
       <div class="chat-window" id="chat-messages">
         <!-- Initial Nora message -->
         <div class="message assistant">
-          Hi! I’m Nora. Tell me what you need a quote for — you can paste
-          client emails here. I’ll ask a couple quick questions if anything is
-          missing and then give you a clean quote summary.
+          Hi! What do we need a quote for today?  
+You can paste a client’s inquiry (date, venue, hours, and any details they mentioned), and I’ll help you price it out step by step.
         </div>
       </div>
 
@@ -205,7 +194,7 @@
           class="chat-input"
           type="text"
           autocomplete="off"
-          placeholder="Type your question about a quote…"
+          placeholder="Type a client inquiry or question about a quote…"
         />
         <button type="submit" class="send-button" id="send-button">
           Send
