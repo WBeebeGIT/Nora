@@ -1,100 +1,82 @@
 // public/nora-chat.js
-//
-// Frontend chat logic for Nora help page.
+// Front-end chat wiring for Nora → /api/nora
 
-(function () {
-  const chatBody = document.getElementById("chat-body");
-  const chatForm = document.getElementById("chat-form");
-  const chatInput = document.getElementById("chat-input");
-  const sendButton = document.getElementById("chat-send");
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("chat-input");
+  const messagesEl = document.getElementById("chat-messages");
+  const sendButton = document.getElementById("send-button");
 
-  // Conversation state we send to the backend.
-  // You can inspect this in dev tools if needed.
-  const messages = [];
-
-  function appendMessage(role, content) {
-    const row = document.createElement("div");
-    row.className = "bubble-row " + (role === "user" ? "user" : "assistant");
-
-    const bubble = document.createElement("div");
-    bubble.className = "bubble " + (role === "user" ? "user" : "assistant");
-    bubble.textContent = content;
-
-    row.appendChild(bubble);
-    chatBody.appendChild(row);
-    chatBody.scrollTop = chatBody.scrollHeight;
+  if (!form || !input || !messagesEl) {
+    console.error("Nora chat: missing DOM elements");
+    return;
   }
 
-  function setSending(isSending) {
-    sendButton.disabled = isSending;
-    chatInput.disabled = isSending;
+  function appendMessage(role, text) {
+    const msg = document.createElement("div");
+    msg.classList.add("message");
+    msg.classList.add(role === "user" ? "user" : "assistant");
+    msg.textContent = text;
+    messagesEl.appendChild(msg);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
   async function sendToNora(userText) {
-    // Push user's message into state and UI
-    messages.push({ role: "user", content: userText });
-    appendMessage("user", userText);
+    // Show a lightweight "thinking" bubble
+    const typing = document.createElement("div");
+    typing.classList.add("message", "assistant");
+    typing.textContent = "…";
+    messagesEl.appendChild(typing);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
 
-    // Temporary "typing…" bubble
-    const typingRow = document.createElement("div");
-    typingRow.className = "bubble-row assistant";
-    const typingBubble = document.createElement("div");
-    typingBubble.className = "bubble assistant";
-    typingBubble.textContent = "Nora is typing…";
-    typingRow.appendChild(typingBubble);
-    chatBody.appendChild(typingRow);
-    chatBody.scrollTop = chatBody.scrollHeight;
+    sendButton.disabled = true;
+    input.disabled = true;
 
     try {
-      setSending(true);
-
-      const response = await fetch("/api/nora", {
+      const res = await fetch("/api/nora", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ message: userText }),
       });
 
-      const data = await response.json();
+      typing.remove();
 
-      // Remove the typing bubble
-      chatBody.removeChild(typingRow);
-
-      if (!response.ok || !data.reply) {
-        const errorText =
-          data?.error || "Sorry, something went wrong talking to Nora.";
-        appendMessage("assistant", errorText);
-        messages.push({ role: "assistant", content: errorText });
+      if (!res.ok) {
+        console.error("Nora API error:", res.status);
+        appendMessage(
+          "assistant",
+          "Hmm — I couldn’t complete that request. Please try again in a moment."
+        );
         return;
       }
 
-      appendMessage("assistant", data.reply);
-      messages.push({ role: "assistant", content: data.reply });
+      const data = await res.json();
+      const reply =
+        (data && typeof data.reply === "string" && data.reply.trim()) ||
+        "Sorry, I couldn’t generate a response just now.";
+
+      appendMessage("assistant", reply);
     } catch (err) {
-      console.error("Error calling /api/nora:", err);
-      chatBody.removeChild(typingRow);
-      const errorText =
-        "Sorry, I ran into a connection issue. Please try again in a moment.";
-      appendMessage("assistant", errorText);
-      messages.push({ role: "assistant", content: errorText });
+      console.error("Nora fetch error:", err);
+      typing.remove();
+      appendMessage(
+        "assistant",
+        "I ran into a connection issue talking to the server. Please try again."
+      );
     } finally {
-      setSending(false);
+      sendButton.disabled = false;
+      input.disabled = false;
+      input.focus();
     }
   }
 
-  // Initial greeting (local only; not sent to API until user replies)
-  const initialGreeting =
-    "Hi! I’m Nora. I can help you with instant videography quotes. " +
-    "Tell me about your event — date, location, and how many hours you’re thinking — " +
-    "and I’ll walk you through coverage and add-ons.";
-  appendMessage("assistant", initialGreeting);
-  messages.push({ role: "assistant", content: initialGreeting });
-
-  chatForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const text = chatInput.value.trim();
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = (input.value || "").trim();
     if (!text) return;
 
-    chatInput.value = "";
+    appendMessage("user", text);
+    input.value = "";
     sendToNora(text);
   });
-})();
+});
