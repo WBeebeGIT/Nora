@@ -1,9 +1,16 @@
 // /api/quote.js
-// Nora – quote-only helper (structured entry point if you ever need it)
+// Nora – quote-only structured endpoint
 
-const OpenAI = require("openai");
+import OpenAI from "openai";
 
-module.exports = async function handler(req, res) {
+// Ensure JSON body parsing on Vercel
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -11,7 +18,7 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
-    console.error("Missing OPENAI_API_KEY environment variable");
+    console.error("❌ Missing OPENAI_API_KEY in environment");
     return res.status(500).json({ error: "Server misconfigured: missing API key" });
   }
 
@@ -29,29 +36,27 @@ module.exports = async function handler(req, res) {
       messages: [
         {
           role: "system",
-          content: [
-            "You are Nora, the quoting assistant for Cinematic Videographers, LLC.",
-            "You ONLY respond with a quote based on the details provided.",
-            "",
-            "PRICING RULES:",
-            "- Base videography coverage is $400 per hour.",
-            "- 4-hour minimum (bill for at least 4 hours).",
-            "",
-            "ADD-ONS:",
-            "- Drone: $700.",
-            "- Livestream: $700.",
-            "- Rush 48 hr delivery: +$200.",
-            "- Rush 24 hr delivery: +$400.",
-            "- Raw Footage USB Drive: $100.",
-            "",
-            "No separate travel fee is charged.",
-            "",
-            "OUTPUT FORMAT:",
-            "Quote Summary:",
-            "- Coverage (X hrs @ $400/hr) — $Y",
-            "- Add-ons listed one per line with prices",
-            "Final Total — $Z",
-          ].join("\n"),
+          content: `
+You are Nora, the quoting assistant for Cinematic Videographers, LLC.
+You ONLY respond with a clean quote based on the details provided.
+
+PRICING RULES:
+- Videography coverage: $400/hr.
+- Strict 4-hour minimum.
+- Add-ons:
+    Drone: $700
+    Livestream: $700
+    Rush 48 hr: +$200
+    Rush 24 hr: +$400
+    Raw Footage USB Drive: $100
+- NO travel fees.
+
+FORMAT:
+Quote Summary:
+- Coverage (X hrs @ $400/hr) — $Y
+- Add-ons (each listed separately)
+Final Total — $Z
+          `,
         },
         {
           role: "user",
@@ -60,11 +65,16 @@ module.exports = async function handler(req, res) {
       ],
     });
 
-    const reply = completion.choices?.[0]?.message?.content?.trim() || "";
+    const reply =
+      completion.choices?.[0]?.message?.content?.trim() ||
+      "I couldn't generate a quote right now.";
 
     return res.status(200).json({ reply });
   } catch (err) {
-    console.error("OpenAI API error in /api/quote:", err);
-    return res.status(500).json({ error: "OpenAI API error" });
+    console.error("❌ OpenAI API error in /api/quote:", err);
+    return res.status(500).json({
+      error: "OpenAI API error — check logs or quota",
+      details: err?.response?.data || err.message,
+    });
   }
-};
+}
